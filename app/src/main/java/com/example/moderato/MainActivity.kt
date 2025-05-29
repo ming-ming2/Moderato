@@ -1,7 +1,9 @@
+// app/src/main/java/com/example/moderato/MainActivity.kt
 package com.example.moderato
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
@@ -21,8 +23,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvEmptyMessage: TextView
     private lateinit var btnAddEmotion: Button
 
-    // 파일 매니저 추가
+    private lateinit var todayChordCard: LinearLayout
+    private lateinit var tvChordSymbol: TextView
+    private lateinit var tvChordName: TextView
+    private lateinit var tvChordFullName: TextView
+    private lateinit var tvIntensity: TextView
+    private lateinit var tvChordMessage: TextView
+    private lateinit var tvEmotionCount: TextView
+    private lateinit var tvDominantEmotion: TextView
+    private lateinit var btnPlayChord: Button
+    private lateinit var btnShareChord: Button
+
     private lateinit var fileManager: EmotionFileManager
+    private lateinit var chordAnalyzer: EmotionChordAnalyzer
     private val emotionData = mutableListOf<EmotionRecord>()
 
     companion object {
@@ -33,11 +46,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 파일 매니저 초기화
         fileManager = EmotionFileManager(this)
+        chordAnalyzer = EmotionChordAnalyzer()
 
         initViews()
+        initChordViews()
         setupClickListeners()
+        setupChordClickListeners()
         loadTodayEmotions()
         updateEmotionDisplay()
     }
@@ -46,10 +61,9 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == EMOTION_INPUT_REQUEST && resultCode == RESULT_OK) {
-            // 감정 입력 완료 후 데이터 새로고침
             loadTodayEmotions()
             updateEmotionDisplay()
-            updateAddEmotionButton() // 버튼 상태도 업데이트
+            updateAddEmotionButton()
         }
     }
 
@@ -60,6 +74,19 @@ class MainActivity : AppCompatActivity() {
         emotionTimelineContainer = findViewById(R.id.emotionTimelineContainer)
         tvEmptyMessage = findViewById(R.id.tvEmptyMessage)
         btnAddEmotion = findViewById(R.id.btnAddEmotion)
+    }
+
+    private fun initChordViews() {
+        todayChordCard = findViewById(R.id.todayChordCard)
+        tvChordSymbol = findViewById(R.id.tvChordSymbol)
+        tvChordName = findViewById(R.id.tvChordName)
+        tvChordFullName = findViewById(R.id.tvChordFullName)
+        tvIntensity = findViewById(R.id.tvIntensity)
+        tvChordMessage = findViewById(R.id.tvChordMessage)
+        tvEmotionCount = findViewById(R.id.tvEmotionCount)
+        tvDominantEmotion = findViewById(R.id.tvDominantEmotion)
+        btnPlayChord = findViewById(R.id.btnPlayChord)
+        btnShareChord = findViewById(R.id.btnShareChord)
     }
 
     private fun setupClickListeners() {
@@ -83,7 +110,20 @@ class MainActivity : AppCompatActivity() {
         updateAddEmotionButton()
     }
 
-    // 오늘 모든 시간대가 기록되었는지 확인
+    private fun setupChordClickListeners() {
+        btnPlayChord.setOnClickListener {
+            handlePlayChord()
+        }
+
+        btnShareChord.setOnClickListener {
+            handleShareChord()
+        }
+
+        todayChordCard.setOnClickListener {
+            showChordDetails()
+        }
+    }
+
     private fun isAllTimeSlotsRecorded(): Boolean {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val timeSlots = arrayOf("morning", "afternoon", "evening", "night")
@@ -93,7 +133,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 감정 기록 버튼 상태 업데이트
     private fun updateAddEmotionButton() {
         if (isAllTimeSlotsRecorded()) {
             btnAddEmotion.text = "🎼 오늘 연주는 끝났어요!"
@@ -110,18 +149,121 @@ class MainActivity : AppCompatActivity() {
         emotionData.clear()
 
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-        // 파일에서 오늘의 감정 데이터 불러오기
         val savedEmotions = fileManager.loadEmotionsByDate(today)
         emotionData.addAll(savedEmotions)
-
-        // 데이터가 없으면 샘플 데이터는 추가하지 않음 (실제 기록만 표시)
     }
 
     private fun updateEmotionDisplay() {
         updateEmotionStaff()
         updateEmotionTimeline()
-        updateAddEmotionButton() // 여기도 추가
+        updateTodayChord()
+        updateAddEmotionButton()
+    }
+
+    private fun updateTodayChord() {
+        val todayChord = chordAnalyzer.analyzeEmotions(emotionData)
+        displayChord(todayChord)
+    }
+
+    private fun displayChord(chord: EmotionChordAnalyzer.EmotionChord) {
+        tvChordSymbol.text = chord.chordSymbol
+        tvChordName.text = chord.chordName
+        tvChordFullName.text = chord.chordFullName
+        tvIntensity.text = chord.intensity.split(" ")[0]
+        tvChordMessage.text = chord.message
+
+        tvEmotionCount.text = "${chord.emotionCount}개 감정 기록"
+        tvDominantEmotion.text = "주요: ${chord.dominantEmotion}"
+
+        try {
+            val chordColor = Color.parseColor(chord.chordColor)
+            tvChordName.setTextColor(chordColor)
+            tvChordSymbol.setTextColor(chordColor)
+        } catch (e: Exception) {
+            tvChordName.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+        }
+
+        if (chord.emotionCount == 0) {
+            btnPlayChord.text = "🎵 첫 감정 기록하기"
+            btnShareChord.visibility = View.GONE
+        } else {
+            btnPlayChord.text = "♪ 코드 듣기"
+            btnShareChord.visibility = View.VISIBLE
+        }
+
+        animateChordCard()
+    }
+
+    private fun animateChordCard() {
+        todayChordCard.alpha = 0f
+        todayChordCard.scaleX = 0.8f
+        todayChordCard.scaleY = 0.8f
+
+        todayChordCard.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(500)
+            .start()
+    }
+
+    private fun handlePlayChord() {
+        val currentChord = chordAnalyzer.analyzeEmotions(emotionData)
+
+        if (currentChord.emotionCount == 0) {
+            val intent = Intent(this, EmotionInputActivity::class.java)
+            startActivityForResult(intent, EMOTION_INPUT_REQUEST)
+        } else {
+            showChordPlayMessage(currentChord)
+        }
+    }
+
+    private fun showChordPlayMessage(chord: EmotionChordAnalyzer.EmotionChord) {
+        val message = "${chord.chordName} 코드가 연주됩니다 🎵\n${chord.message}"
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun handleShareChord() {
+        val currentChord = chordAnalyzer.analyzeEmotions(emotionData)
+        val today = SimpleDateFormat("yyyy년 MM월 dd일", Locale.getDefault()).format(Date())
+
+        val shareText = buildString {
+            append("🎵 ${today}의 감정 코드\n\n")
+            append("${currentChord.chordName} (${currentChord.chordFullName})\n")
+            append("${currentChord.message}\n\n")
+            append("📊 ${currentChord.emotionCount}개 감정 기록\n")
+            append("🎼 주요 감정: ${currentChord.dominantEmotion}\n")
+            append("🎚️ 강도: ${currentChord.intensity}\n\n")
+            append("#Moderato #감정코드 #${currentChord.chordName}")
+        }
+
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        startActivity(Intent.createChooser(shareIntent, "오늘의 감정 코드 공유하기"))
+    }
+
+    private fun showChordDetails() {
+        val currentChord = chordAnalyzer.analyzeEmotions(emotionData)
+
+        val detailMessage = buildString {
+            append("🎼 ${currentChord.chordName} 상세 정보\n\n")
+            append("📝 정식 명칭: ${currentChord.chordFullName}\n")
+            append("🎵 코드 기호: ${currentChord.chordSymbol}\n")
+            append("🎚️ 감정 강도: ${currentChord.intensity}\n")
+            append("📊 기록된 감정: ${currentChord.emotionCount}개\n")
+            append("🎯 주요 감정: ${currentChord.dominantEmotion}\n\n")
+            append("💭 오늘의 감정 해석:\n${currentChord.message}")
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("🎵 ${currentChord.chordName}")
+        builder.setMessage(detailMessage)
+        builder.setPositiveButton("확인", null)
+        builder.show()
     }
 
     private fun updateEmotionTimeline() {
@@ -153,7 +295,6 @@ class MainActivity : AppCompatActivity() {
             setPadding(16, 12, 16, 12)
             background = ContextCompat.getDrawable(this@MainActivity, R.drawable.emotion_timeline_bg)
 
-            // 클릭 시 수정 가능하도록
             setOnClickListener {
                 editEmotion(emotion)
             }
@@ -216,7 +357,6 @@ class MainActivity : AppCompatActivity() {
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
 
-        // 편집 힌트 추가
         val editHint = TextView(this).apply {
             text = "✏️"
             textSize = 12f
@@ -260,7 +400,7 @@ class MainActivity : AppCompatActivity() {
                     "night" -> "NT"
                     else -> ""
                 },
-                intensity = getEmotionIntensity(emotion.date, emotion.timeOfDay), // 파일에서 강도 읽어오기
+                intensity = getEmotionIntensity(emotion.date, emotion.timeOfDay),
                 timeOfDay = emotion.timeOfDay
             )
         }
@@ -271,7 +411,6 @@ class MainActivity : AppCompatActivity() {
         emotionStaffView.setEmotions(emotionNotes, key, tempo)
     }
 
-    // 파일에서 감정 강도 읽어오기
     private fun getEmotionIntensity(date: String, timeOfDay: String): Int {
         return try {
             val fileName = "${date}_${timeOfDay}.txt"
@@ -279,7 +418,6 @@ class MainActivity : AppCompatActivity() {
             val content = fileInput.bufferedReader().use { it.readText() }
             fileInput.close()
 
-            // 강도 정보 파싱
             val lines = content.split("\n")
             for (line in lines) {
                 if (line.startsWith("강도:")) {
@@ -294,34 +432,34 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            3 // 기본값
+            3
         } catch (e: Exception) {
-            3 // 오류 시 기본값
+            3
         }
     }
 
     private fun getEmotionPitch(symbol: String): Int {
         return when(symbol) {
-            "♪" -> 7    // 기쁨 - 높은 시 (밝고 경쾌한 느낌)
-            "♩" -> 5    // 평온 - 라 (안정적이고 편안한 느낌)
-            "♫" -> 8    // 설렘 - 높은 도 (두근거리는 높은 음)
-            "♭" -> 2    // 슬픔 - 미 (애절하고 낮은 느낌)
-            "♯" -> 6    // 화남 - 시 (날카롭고 강한 느낌)
-            "𝄢" -> 1    // 불안 - 레 (불안정하고 낮은 느낌)
-            "♡" -> 6    // 사랑 - 시 (따뜻하고 중간 높은 음)
-            else -> 4   // 기본값 - 솔
+            "♪" -> 7
+            "♩" -> 5
+            "♫" -> 8
+            "♭" -> 2
+            "♯" -> 6
+            "𝄢" -> 1
+            "♡" -> 6
+            else -> 4
         }
     }
 
     private fun getEmotionColor(symbol: String): Int {
         return when(symbol) {
-            "♪" -> ContextCompat.getColor(this, R.color.primary_pink)      // 기쁨
-            "♩" -> ContextCompat.getColor(this, R.color.primary_purple)    // 평온
-            "♫" -> ContextCompat.getColor(this, R.color.secondary_orange)  // 설렘
-            "♭" -> ContextCompat.getColor(this, android.R.color.holo_blue_dark)  // 슬픔
-            "♯" -> ContextCompat.getColor(this, android.R.color.holo_red_dark)   // 화남
-            "𝄢" -> ContextCompat.getColor(this, android.R.color.darker_gray)      // 불안
-            "♡" -> ContextCompat.getColor(this, android.R.color.holo_red_light)  // 사랑
+            "♪" -> ContextCompat.getColor(this, R.color.primary_pink)
+            "♩" -> ContextCompat.getColor(this, R.color.primary_purple)
+            "♫" -> ContextCompat.getColor(this, R.color.secondary_orange)
+            "♭" -> ContextCompat.getColor(this, android.R.color.holo_blue_dark)
+            "♯" -> ContextCompat.getColor(this, android.R.color.holo_red_dark)
+            "𝄢" -> ContextCompat.getColor(this, android.R.color.darker_gray)
+            "♡" -> ContextCompat.getColor(this, android.R.color.holo_red_light)
             else -> ContextCompat.getColor(this, R.color.text_primary)
         }
     }
@@ -420,7 +558,6 @@ class MainActivity : AppCompatActivity() {
         builder.setTitle("데이터 정리")
         builder.setMessage(message)
         builder.setPositiveButton("삭제") { _, _ ->
-            // TODO: 전체 데이터 삭제 기능 (추후 구현)
             Toast.makeText(this, "데이터 삭제 기능은 추후 구현 예정입니다", Toast.LENGTH_SHORT).show()
         }
         builder.setNegativeButton("취소", null)
@@ -434,7 +571,8 @@ class MainActivity : AppCompatActivity() {
             append("2. 시간대별로 다른 감정을 기록할 수 있어요\n")
             append("3. 감정 강도와 태그를 설정해보세요\n")
             append("4. 기록된 감정은 악보로 표현됩니다\n")
-            append("5. 타임라인에서 감정을 클릭하면 수정할 수 있어요\n\n")
+            append("5. 타임라인에서 감정을 클릭하면 수정할 수 있어요\n")
+            append("6. 오늘의 감정 코드를 확인하고 공유해보세요\n\n")
             append("💾 모든 감정은 자동으로 저장됩니다!")
         }
 
