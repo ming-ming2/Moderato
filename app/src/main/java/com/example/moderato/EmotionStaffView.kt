@@ -161,84 +161,198 @@ class EmotionStaffView @JvmOverloads constructor(
 
     private fun drawNoteGlow(canvas: Canvas, x: Float, y: Float, symbol: String) {
         val glowColor = when (symbol) {
-            "♪" -> Color.parseColor("#60FF6B9D") // 기쁨 - 핑크 글로우
-            "♩" -> Color.parseColor("#608B5CF6") // 평온 - 퍼플 글로우
-            "♫" -> Color.parseColor("#60FFB366") // 설렘 - 오렌지 글로우
+            "♪" -> Color.parseColor("#80FFD700") // 기쁨 - 황금 글로우
+            "♩" -> Color.parseColor("#608B5CF6") // 평온 - 보라 글로우
+            "♫" -> Color.parseColor("#80FFB366") // 설렘 - 오렌지 글로우 (더 밝게)
             "♭" -> Color.parseColor("#606366F1") // 슬픔 - 블루 글로우
-            "♯" -> Color.parseColor("#60F43F5E") // 화남 - 레드 글로우
+            "♯" -> Color.parseColor("#80F43F5E") // 화남 - 레드 글로우 (더 밝게)
+            "𝄢" -> Color.parseColor("#606B7280") // 불안 - 회색 글로우
+            "♡" -> Color.parseColor("#80F59E0B") // 사랑 - 따뜻한 주황 글로우
             else -> Color.parseColor("#60FFFFFF")
         }
 
         glowPaint.color = glowColor
-        canvas.drawCircle(x, y, 25f, glowPaint)
+
+        // 감정에 따라 글로우 크기도 다르게
+        val glowRadius = when (symbol) {
+            "♪" -> 30f  // 기쁨 - 큰 글로우 (활기차다)
+            "♩" -> 25f  // 평온 - 중간 글로우 (안정감)
+            "♫" -> 35f  // 설렘 - 가장 큰 글로우 (두근거림)
+            "♭" -> 20f  // 슬픔 - 작은 글로우 (침울함)
+            "♯" -> 28f  // 화남 - 큰 글로우 (강렬함)
+            "𝄢" -> 18f  // 불안 - 가장 작은 글로우 (위축됨)
+            "♡" -> 32f  // 사랑 - 큰 글로우 (따뜻함)
+            else -> 25f
+        }
+
+        canvas.drawCircle(x, y, glowRadius, glowPaint)
     }
 
     private fun drawBeautifulNote(canvas: Canvas, x: Float, y: Float, symbol: String) {
         val notePaint = Paint().apply {
             isAntiAlias = true
             style = Paint.Style.FILL
-            setShadowLayer(2f, 1f, 1f, Color.parseColor("#40000000"))
+            setShadowLayer(3f, 1f, 2f, Color.parseColor("#40000000"))
         }
 
         when (symbol) {
             "♪" -> {
-                // 기쁨 - 황금색 온음표 (MEGA SIZE!)
-                notePaint.shader = RadialGradient(x, y, 16f,
+                // 기쁨 - 황금빛 8분음표 (활기차고 밝게)
+                notePaint.shader = RadialGradient(x, y, 18f,
                     Color.parseColor("#FFD700"),
                     Color.parseColor("#FF6B9D"),
                     Shader.TileMode.CLAMP)
-                canvas.drawCircle(x, y, 14f, notePaint)
+                canvas.drawCircle(x, y, 16f, notePaint)
+
+                // 음표 기둥 (위로 향하는 활기찬 느낌)
+                val stemPaint = Paint(notePaint).apply {
+                    shader = LinearGradient(x, y, x, y - 60f,
+                        Color.parseColor("#FF6B9D"),
+                        Color.parseColor("#FFD700"),
+                        Shader.TileMode.CLAMP)
+                    strokeWidth = 5f
+                    style = Paint.Style.STROKE
+                }
+                canvas.drawLine(x + 16f, y, x + 16f, y - 60f, stemPaint)
+
+                // 8분음표 꼬리 (경쾌한 곡선)
+                val path = Path().apply {
+                    moveTo(x + 16f, y - 50f)
+                    quadTo(x + 35f, y - 40f, x + 30f, y - 20f)
+                }
+                canvas.drawPath(path, stemPaint)
 
                 // 반짝이는 하이라이트
                 val highlight = Paint().apply {
                     color = Color.parseColor("#90FFFFFF")
                     style = Paint.Style.FILL
                 }
-                canvas.drawCircle(x - 4f, y - 4f, 6f, highlight)
+                canvas.drawCircle(x - 6f, y - 6f, 8f, highlight)
             }
             "♩" -> {
-                // 평온 - 그라데이션 4분음표 (MEGA SIZE!)
-                notePaint.shader = RadialGradient(x, y, 14f,
+                // 평온 - 부드러운 4분음표 (안정적이고 차분하게)
+                notePaint.shader = RadialGradient(x, y, 16f,
                     Color.parseColor("#8B5CF6"),
                     Color.parseColor("#6366F1"),
                     Shader.TileMode.CLAMP)
-                canvas.drawCircle(x, y, 12f, notePaint)
+                canvas.drawCircle(x, y, 14f, notePaint)
 
-                // 기둥 (더 굵고 길게)
+                // 차분한 기둥
                 val stemPaint = Paint(notePaint).apply {
                     shader = null
+                    color = Color.parseColor("#6366F1")
                     strokeWidth = 4f
                     style = Paint.Style.STROKE
                 }
-                canvas.drawLine(x + 12f, y, x + 12f, y - 50f, stemPaint)
+                canvas.drawLine(x + 14f, y, x + 14f, y - 45f, stemPaint)
             }
             "♫" -> {
-                // 설렘 - 연결된 8분음표 (MEGA SIZE!)
+                // 설렘 - 연결된 16분음표 (두근거리는 느낌)
                 notePaint.color = Color.parseColor("#FFB366")
-                canvas.drawCircle(x - 8f, y, 10f, notePaint)
-                canvas.drawCircle(x + 8f, y + 6f, 10f, notePaint)
 
-                // 연결선 (더 굵게)
-                val beamPaint = Paint(notePaint).apply { strokeWidth = 6f }
-                canvas.drawLine(x - 3f, y - 10f, x + 13f, y - 4f, beamPaint)
+                // 두 개의 음표 머리 (두근두근)
+                canvas.drawCircle(x - 10f, y - 5f, 12f, notePaint)
+                canvas.drawCircle(x + 10f, y + 5f, 12f, notePaint)
+
+                // 연결 기둥들
+                val stemPaint = Paint(notePaint).apply {
+                    strokeWidth = 4f
+                    style = Paint.Style.STROKE
+                }
+                canvas.drawLine(x - 10f + 12f, y - 5f, x - 10f + 12f, y - 50f, stemPaint)
+                canvas.drawLine(x + 10f + 12f, y + 5f, x + 10f + 12f, y - 40f, stemPaint)
+
+                // 두근거리는 연결선 (2개)
+                canvas.drawLine(x - 10f + 12f, y - 50f, x + 10f + 12f, y - 40f, stemPaint)
+                canvas.drawLine(x - 10f + 12f, y - 45f, x + 10f + 12f, y - 35f, stemPaint)
             }
             "♭" -> {
-                // 슬픔 - 차분한 블루 톤 (MEGA SIZE!)
-                notePaint.shader = RadialGradient(x, y, 14f,
+                // 슬픔 - 플랫 기호와 함께 낮은 음표 (애절하게)
+                notePaint.shader = RadialGradient(x, y, 16f,
                     Color.parseColor("#6366F1"),
-                    Color.parseColor("#3B82F6"),
+                    Color.parseColor("#1E40AF"),
                     Shader.TileMode.CLAMP)
-                canvas.drawCircle(x, y, 12f, notePaint)
+                canvas.drawCircle(x, y, 14f, notePaint)
+
+                // 플랫 기호 그리기
+                val flatPaint = Paint().apply {
+                    color = Color.parseColor("#1E40AF")
+                    strokeWidth = 3f
+                    style = Paint.Style.STROKE
+                    isAntiAlias = true
+                }
+                canvas.drawLine(x - 25f, y - 20f, x - 25f, y + 10f, flatPaint)
+
+                val flatPath = Path().apply {
+                    moveTo(x - 25f, y - 5f)
+                    quadTo(x - 15f, y - 15f, x - 18f, y)
+                    quadTo(x - 15f, y + 5f, x - 25f, y)
+                }
+                canvas.drawPath(flatPath, flatPaint)
             }
             "♯" -> {
-                // 화남 - 강렬한 레드 톤 (MEGA SIZE!)
-                notePaint.shader = RadialGradient(x, y, 14f,
+                // 화남 - 샵 기호와 강렬한 음표 (날카롭게)
+                notePaint.shader = RadialGradient(x, y, 16f,
                     Color.parseColor("#F43F5E"),
                     Color.parseColor("#DC2626"),
                     Shader.TileMode.CLAMP)
-                canvas.drawCircle(x, y, 12f, notePaint)
+                canvas.drawCircle(x, y, 14f, notePaint)
+
+                // 샵 기호 그리기 (날카롭게)
+                val sharpPaint = Paint().apply {
+                    color = Color.parseColor("#DC2626")
+                    strokeWidth = 4f
+                    style = Paint.Style.STROKE
+                    isAntiAlias = true
+                }
+                // 세로선 2개
+                canvas.drawLine(x - 30f, y - 15f, x - 30f, y + 15f, sharpPaint)
+                canvas.drawLine(x - 22f, y - 15f, x - 22f, y + 15f, sharpPaint)
+                // 가로선 2개 (약간 기울어진)
+                canvas.drawLine(x - 35f, y - 8f, x - 17f, y - 5f, sharpPaint)
+                canvas.drawLine(x - 35f, y + 5f, x - 17f, y + 8f, sharpPaint)
+            }
+            "𝄢" -> {
+                // 불안 - 낮은음자리표와 함께 (불안정하게)
+                notePaint.shader = RadialGradient(x, y, 16f,
+                    Color.parseColor("#6B7280"),
+                    Color.parseColor("#374151"),
+                    Shader.TileMode.CLAMP)
+                canvas.drawCircle(x, y, 14f, notePaint)
+
+                // 낮은음자리표 기호
+                val bassPaint = Paint().apply {
+                    color = Color.parseColor("#374151")
+                    textSize = 24f
+                    isAntiAlias = true
+                    textAlign = Paint.Align.CENTER
+                }
+                canvas.drawText("𝄢", x - 25f, y + 8f, bassPaint)
+            }
+            "♡" -> {
+                // 사랑 - 하트 모양 음표 (따뜻하게)
+                notePaint.shader = RadialGradient(x, y, 16f,
+                    Color.parseColor("#F59E0B"),
+                    Color.parseColor("#F43F5E"),
+                    Shader.TileMode.CLAMP)
+
+                // 하트 모양으로 그리기
+                val heartPath = Path().apply {
+                    moveTo(x, y + 8f)
+                    cubicTo(x - 20f, y - 8f, x - 35f, y + 5f, x, y + 20f)
+                    cubicTo(x + 35f, y + 5f, x + 20f, y - 8f, x, y + 8f)
+                }
+                canvas.drawPath(heartPath, notePaint)
+
+                // 하트 안에 작은 하이라이트
+                val highlight = Paint().apply {
+                    color = Color.parseColor("#90FFFFFF")
+                    style = Paint.Style.FILL
+                }
+                canvas.drawCircle(x - 5f, y - 2f, 4f, highlight)
             }
             else -> {
+                // 기본 음표
                 notePaint.color = Color.parseColor("#FFFFFF")
                 canvas.drawCircle(x, y, 12f, notePaint)
             }
@@ -281,16 +395,15 @@ class EmotionStaffView @JvmOverloads constructor(
 
     private fun getNoteY(centerY: Float, pitch: Int, spacing: Float): Float {
         return when (pitch) {
-            0 -> centerY + 96f  // 낮은 도
-            1 -> centerY + 80f  // 레
-            2 -> centerY + 64f  // 미 (첫 번째 선)
+            1 -> centerY + 80f  // 낮은 레 (불안 - 아래쪽)
+            2 -> centerY + 64f  // 미 (슬픔 - 첫 번째 선)
             3 -> centerY + 48f  // 파
-            4 -> centerY + 32f  // 솔 (두 번째 선)
-            5 -> centerY + 16f  // 라
-            6 -> centerY + 0f   // 시 (세 번째 선)
-            7 -> centerY - 16f  // 높은 도
-            8 -> centerY - 32f  // 높은 레
-            else -> centerY + 32f
+            4 -> centerY + 32f  // 솔 (기본 - 두 번째 선)
+            5 -> centerY + 16f  // 라 (평온 - 세 번째 선 위)
+            6 -> centerY + 0f   // 시 (화남/사랑 - 세 번째 선)
+            7 -> centerY - 16f  // 높은 도 (기쁨 - 위쪽)
+            8 -> centerY - 32f  // 높은 레 (설렘 - 가장 위)
+            else -> centerY + 32f // 기본값
         }
     }
 }
