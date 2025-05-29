@@ -1,7 +1,10 @@
 package com.example.moderato
 
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -140,7 +143,7 @@ class MainActivity : AppCompatActivity() {
     private fun createTimelineItem(emotion: EmotionRecord): LinearLayout {
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = android.view.Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -185,12 +188,12 @@ class MainActivity : AppCompatActivity() {
             }
             textSize = 16f
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_primary))
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            typeface = Typeface.DEFAULT_BOLD
         }
 
         val emotionContainer = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            gravity = android.view.Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 setMargins(0, 4, 0, 0)
             }
@@ -256,7 +259,9 @@ class MainActivity : AppCompatActivity() {
                     "evening" -> "EV"
                     "night" -> "NT"
                     else -> ""
-                }
+                },
+                intensity = getEmotionIntensity(emotion.date, emotion.timeOfDay), // 파일에서 강도 읽어오기
+                timeOfDay = emotion.timeOfDay
             )
         }
 
@@ -264,6 +269,35 @@ class MainActivity : AppCompatActivity() {
         val tempo = determineTempo(emotionData)
 
         emotionStaffView.setEmotions(emotionNotes, key, tempo)
+    }
+
+    // 파일에서 감정 강도 읽어오기
+    private fun getEmotionIntensity(date: String, timeOfDay: String): Int {
+        return try {
+            val fileName = "${date}_${timeOfDay}.txt"
+            val fileInput = openFileInput(fileName)
+            val content = fileInput.bufferedReader().use { it.readText() }
+            fileInput.close()
+
+            // 강도 정보 파싱
+            val lines = content.split("\n")
+            for (line in lines) {
+                if (line.startsWith("강도:")) {
+                    val intensityText = line.substringAfter("강도:").trim()
+                    return when {
+                        intensityText.contains("pp") -> 1
+                        intensityText.contains("p") && !intensityText.contains("pp") -> 2
+                        intensityText.contains("mf") -> 3
+                        intensityText.contains("f") && !intensityText.contains("ff") -> 4
+                        intensityText.contains("ff") -> 5
+                        else -> 3
+                    }
+                }
+            }
+            3 // 기본값
+        } catch (e: Exception) {
+            3 // 오류 시 기본값
+        }
     }
 
     private fun getEmotionPitch(symbol: String): Int {
@@ -332,7 +366,7 @@ class MainActivity : AppCompatActivity() {
     private fun showSettingsMenu() {
         val options = arrayOf("전체 기록 보기", "데이터 정리", "도움말")
 
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("설정")
         builder.setItems(options) { _, which ->
             when (which) {
@@ -366,7 +400,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("전체 기록")
         builder.setMessage(message)
         builder.setPositiveButton("확인", null)
@@ -382,7 +416,7 @@ class MainActivity : AppCompatActivity() {
 
         val message = "총 ${savedDates.size}일의 기록이 있습니다.\n정말로 모든 데이터를 삭제하시겠어요?"
 
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("데이터 정리")
         builder.setMessage(message)
         builder.setPositiveButton("삭제") { _, _ ->
@@ -404,7 +438,7 @@ class MainActivity : AppCompatActivity() {
             append("💾 모든 감정은 자동으로 저장됩니다!")
         }
 
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("도움말")
         builder.setMessage(helpMessage)
         builder.setPositiveButton("확인", null)

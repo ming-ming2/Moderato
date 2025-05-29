@@ -35,7 +35,7 @@ class EmotionFileManager(private val context: Context) {
         }
     }
 
-    // 특정 날짜의 모든 감정 데이터 불러오기
+    // 특정 날짜의 모든 감정 데이터 불러오기 (강도 정보 포함)
     fun loadEmotionsByDate(date: String): List<EmotionRecord> {
         val emotions = mutableListOf<EmotionRecord>()
         val timeSlots = arrayOf("morning", "afternoon", "evening", "night")
@@ -47,7 +47,7 @@ class EmotionFileManager(private val context: Context) {
                 emotions.add(EmotionRecord(
                     timeOfDay = timeSlot,
                     emotionSymbol = emotionData.emotion.symbol,
-                    emotionText = emotionData.emotion.name,
+                    emotionText = "${emotionData.emotion.name} (${getIntensityText(emotionData.intensity)})",
                     date = date
                 ))
             }
