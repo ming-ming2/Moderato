@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var fileManager: EmotionFileManager
     private lateinit var chordAnalyzer: EmotionChordAnalyzer
+    private lateinit var chordHistoryManager: ChordHistoryManager
     private val emotionData = mutableListOf<EmotionRecord>()
 
     companion object {
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         fileManager = EmotionFileManager(this)
         chordAnalyzer = EmotionChordAnalyzer()
+        chordHistoryManager = ChordHistoryManager(this)
 
         initViews()
         initChordViews()
@@ -163,6 +165,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateTodayChord() {
         val todayChord = chordAnalyzer.analyzeEmotions(emotionData)
         displayChord(todayChord)
+
+        if (todayChord.emotionCount > 0) {
+            chordHistoryManager.saveChordHistory(todayChord)
+        }
     }
 
     private fun displayChord(chord: EmotionChordAnalyzer.EmotionChord) {
@@ -502,17 +508,188 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSettingsMenu() {
-        val options = arrayOf("전체 기록 보기", "데이터 정리", "도움말")
+        val options = arrayOf("전체 기록 보기", "코드 히스토리", "코드 통계", "데이터 정리", "도움말")
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("설정")
         builder.setItems(options) { _, which ->
             when (which) {
                 0 -> showAllRecords()
-                1 -> showDataCleanup()
-                2 -> showHelp()
+                1 -> showChordHistory()
+                2 -> showChordStatistics()
+                3 -> showDataCleanup()
+                4 -> showHelp()
             }
         }
+        builder.show()
+    }
+
+    private fun showChordHistory() {
+        val history = chordHistoryManager.getRecentChords(30)
+
+        if (history.isEmpty()) {
+            Toast.makeText(this, "코드 히스토리가 없습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val message = buildString {
+            append("🎼 코드 히스토리 (최근 30일)\n\n")
+            history.forEach { entry ->
+                append("📅 ${entry.date}\n")
+                append("🎵 ${entry.chordName} (${entry.chordSymbol})\n")
+                append("📊 ${entry.emotionCount}개 감정, 주요: ${entry.dominantEmotion}\n")
+                append("💭 ${entry.message.take(50)}${if (entry.message.length > 50) "..." else ""}\n\n")
+            }
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("🎼 코드 히스토리")
+        builder.setMessage(message)
+        builder.setPositiveButton("확인", null)
+        builder.setNegativeButton("상세보기") { _, _ ->
+            showDetailedChordHistory()
+        }
+        builder.show()
+    }
+
+    private fun showDetailedChordHistory() {
+        val history = chordHistoryManager.loadChordHistory()
+
+        if (history.isEmpty()) {
+            Toast.makeText(this, "코드 히스토리가 없습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val chordNames = history.map { "${it.date}: ${it.chordName}" }.toTypedArray()
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("🎼 상세 코드 히스토리")
+        builder.setItems(chordNames) { _, which ->
+            showChordHistoryDetail(history[which])
+        }
+        builder.setNegativeButton("닫기", null)
+        builder.show()
+    }
+
+    private fun showChordHistoryDetail(entry: ChordHistoryManager.ChordHistoryEntry) {
+        val detailMessage = buildString {
+            append("🎼 ${entry.chordName} 상세 정보\n\n")
+            append("📅 날짜: ${entry.date}\n")
+            append("🎵 정식 명칭: ${entry.chordFullName}\n")
+            append("🎚️ 감정 강도: ${entry.intensity}\n")
+            append("📊 기록된 감정: ${entry.emotionCount}개\n")
+            append("🎯 주요 감정: ${entry.dominantEmotion}\n")
+            append("⏰ 저장 시각: ${entry.timestamp}\n\n")
+            append("💭 그날의 감정 해석:\n${entry.message}")
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("🎵 ${entry.chordName} (${entry.date})")
+        builder.setMessage(detailMessage)
+        builder.setPositiveButton("확인", null)
+        builder.setNeutralButton("공유하기") { _, _ ->
+            shareChordHistory(entry)
+        }
+        builder.show()
+    }
+
+    private fun shareChordHistory(entry: ChordHistoryManager.ChordHistoryEntry) {
+        val shareText = buildString {
+            append("🎵 ${entry.date}의 감정 코드\n\n")
+            append("${entry.chordName} (${entry.chordFullName})\n")
+            append("${entry.message}\n\n")
+            append("📊 ${entry.emotionCount}개 감정 기록\n")
+            append("🎼 주요 감정: ${entry.dominantEmotion}\n")
+            append("🎚️ 강도: ${entry.intensity}\n\n")
+            append("#Moderato #감정코드 #${entry.chordName} #감정기록")
+        }
+
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        startActivity(Intent.createChooser(shareIntent, "감정 코드 히스토리 공유하기"))
+    }
+
+    private fun showChordStatistics() {
+        val stats = chordHistoryManager.getChordStatistics()
+
+        if (stats.totalDays == 0) {
+            Toast.makeText(this, "통계를 표시할 데이터가 없습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val message = buildString {
+            append("📊 코드 통계 분석\n\n")
+            append("📅 총 기록 일수: ${stats.totalDays}일\n")
+            append("🏆 가장 많은 코드: ${stats.mostFrequentChord}\n")
+            append("😊 가장 많은 감정: ${stats.mostFrequentEmotion}\n")
+            append("📈 평균 감정 개수: ${"%.1f".format(stats.averageEmotionCount)}개\n\n")
+
+            append("🎼 코드 분포:\n")
+            stats.chordDistribution.entries.sortedByDescending { it.value }.take(5).forEach { (chord, count) ->
+                val percentage = (count * 100.0 / stats.totalDays)
+                append("  $chord: ${count}회 (${"%.1f".format(percentage)}%)\n")
+            }
+
+            append("\n😊 감정 분포:\n")
+            stats.emotionDistribution.entries.sortedByDescending { it.value }.take(5).forEach { (emotion, count) ->
+                val percentage = (count * 100.0 / stats.totalDays)
+                append("  $emotion: ${count}회 (${"%.1f".format(percentage)}%)\n")
+            }
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("📊 코드 통계")
+        builder.setMessage(message)
+        builder.setPositiveButton("확인", null)
+        builder.setNeutralButton("월간 분석") { _, _ ->
+            showMonthlyChordAnalysis()
+        }
+        builder.show()
+    }
+
+    private fun showMonthlyChordAnalysis() {
+        val calendar = Calendar.getInstance()
+        val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(calendar.time)
+        val startDate = "$currentMonth-01"
+
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val endDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+
+        val monthlyHistory = chordHistoryManager.getChordHistoryByDateRange(startDate, endDate)
+
+        if (monthlyHistory.isEmpty()) {
+            Toast.makeText(this, "이번 달 코드 기록이 없습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val message = buildString {
+            append("🗓️ ${SimpleDateFormat("yyyy년 MM월", Locale.getDefault()).format(calendar.time)} 코드 분석\n\n")
+            append("📅 기록 일수: ${monthlyHistory.size}일\n\n")
+
+            append("🎼 이달의 코드 여행:\n")
+            monthlyHistory.take(10).forEach { entry ->
+                val day = entry.date.substringAfterLast("-")
+                append("${day}일: ${entry.chordName} ${entry.chordSymbol}\n")
+            }
+
+            if (monthlyHistory.size > 10) {
+                append("... 외 ${monthlyHistory.size - 10}일 더\n")
+            }
+
+            val monthlyChords = monthlyHistory.groupBy { it.chordName }
+            val dominantChord = monthlyChords.maxByOrNull { it.value.size }?.key
+
+            append("\n🏆 이달의 대표 코드: $dominantChord")
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("🗓️ 월간 코드 분석")
+        builder.setMessage(message)
+        builder.setPositiveButton("확인", null)
         builder.show()
     }
 
@@ -547,21 +724,46 @@ class MainActivity : AppCompatActivity() {
 
     private fun showDataCleanup() {
         val savedDates = fileManager.getAllSavedDates()
-        if (savedDates.isEmpty()) {
-            Toast.makeText(this, "정리할 데이터가 없습니다", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val chordHistory = chordHistoryManager.loadChordHistory()
 
-        val message = "총 ${savedDates.size}일의 기록이 있습니다.\n정말로 모든 데이터를 삭제하시겠어요?"
+        val message = buildString {
+            append("📊 저장된 데이터:\n")
+            append("• 감정 기록: ${savedDates.size}일\n")
+            append("• 코드 히스토리: ${chordHistory.size}일\n\n")
+            append("정말로 모든 데이터를 삭제하시겠어요?")
+        }
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("데이터 정리")
         builder.setMessage(message)
-        builder.setPositiveButton("삭제") { _, _ ->
-            Toast.makeText(this, "데이터 삭제 기능은 추후 구현 예정입니다", Toast.LENGTH_SHORT).show()
+        builder.setPositiveButton("전체 삭제") { _, _ ->
+            showDeleteConfirmation()
+        }
+        builder.setNeutralButton("코드만 삭제") { _, _ ->
+            deleteChordHistoryOnly()
         }
         builder.setNegativeButton("취소", null)
         builder.show()
+    }
+
+    private fun showDeleteConfirmation() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("⚠️ 최종 확인")
+        builder.setMessage("정말로 모든 감정 기록과 코드 히스토리를 삭제하시겠어요?\n이 작업은 되돌릴 수 없습니다.")
+        builder.setPositiveButton("삭제") { _, _ ->
+            Toast.makeText(this, "전체 데이터 삭제 기능은 추후 구현 예정입니다", Toast.LENGTH_SHORT).show()
+        }
+        builder.setNegativeButton("취소", null)
+        builder.show()
+    }
+
+    private fun deleteChordHistoryOnly() {
+        val success = chordHistoryManager.clearAllHistory()
+        if (success) {
+            Toast.makeText(this, "코드 히스토리가 삭제되었습니다", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "삭제 중 오류가 발생했습니다", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showHelp() {
@@ -572,7 +774,8 @@ class MainActivity : AppCompatActivity() {
             append("3. 감정 강도와 태그를 설정해보세요\n")
             append("4. 기록된 감정은 악보로 표현됩니다\n")
             append("5. 타임라인에서 감정을 클릭하면 수정할 수 있어요\n")
-            append("6. 오늘의 감정 코드를 확인하고 공유해보세요\n\n")
+            append("6. 오늘의 감정 코드를 확인하고 공유해보세요\n")
+            append("7. 설정에서 코드 히스토리와 통계를 확인하세요\n\n")
             append("💾 모든 감정은 자동으로 저장됩니다!")
         }
 
