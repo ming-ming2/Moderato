@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="감정 기록하기"
+                android:textSize="24sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="48dp"
+                android:layout_height="48dp" />
+
+        </LinearLayout>
+
+        <!-- 1. 감정 선택 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎵 어떤 기분이었나요?"
+            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <RadioGroup
+            android:id="@+id/rgEmotions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp">
+
+            <RadioButton
+                android:id="@+id/rbJoy"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♪ 기쁨 - 밝고 경쾌한 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbPeace"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♩ 평온 - 차분하고 안정된 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbExcitement"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♫ 설렘 - 두근거리고 기대되는 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbSadness"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♭ 슬픔 - 우울하고 침울한 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbAnger"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♯ 화남 - 짜증나고 분한 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbAnxiety"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="𝄢 불안 - 걱정되고 초조한 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+            <RadioButton
+                android:id="@+id/rbLove"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="♡ 사랑 - 따뜻하고 애정 어린 기분"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg"
+                android:layout_marginBottom="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
+
+        </RadioGroup>
+
+        <!-- 2. 강도 조절 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎚️ 감정의 강도는 어느 정도였나요?"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="pp"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginEnd="12dp" />
+
+            <SeekBar
+                android:id="@+id/seekBarIntensity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="4"
+                android:progress="2"
+                android:progressTint="@color/primary_pink"
+                android:thumbTint="@color/primary_pink" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ff"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginStart="12dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvIntensityLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="보통 (mf)"
+            android:textSize="16sp"
+            android:textColor="@color/primary_pink"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+        <!-- 3. 시간대 선택 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏰ 언제의 기분인가요?"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <RadioGroup
+            android:id="@+id/rgTimeOfDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="32dp">
+
+            <RadioButton
+                android:id="@+id/rbMorning"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="🌅 아침"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg_small"
+                android:layout_marginEnd="8dp"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/rbAfternoon"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="🌞 오후"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg_small"
+                android:layout_marginEnd="8dp"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/rbEvening"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="🌙 저녁"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg_small"
+                android:layout_marginEnd="8dp"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/rbNight"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="🌃 밤"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/radio_button_bg_small"
+                android:gravity="center" />
+
+        </RadioGroup>
+
+        <!-- 4. 감정 태그 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏷️ 어떤 상황이었나요? (선택사항)"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="32dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <CheckBox
+                    android:id="@+id/cbWork"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#업무"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <CheckBox
+                    android:id="@+id/cbExercise"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#운동"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <CheckBox
+                    android:id="@+id/cbRest"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#휴식"
+                    android:textColor="@color/text_primary" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/cbMeeting"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#모임"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <CheckBox
+                    android:id="@+id/cbFamily"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#가족"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <CheckBox
+                    android:id="@+id/cbStudy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="#공부"
+                    android:textColor="@color/text_primary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 5. 간단 메모 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📝 한 줄 기록 (선택사항)"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etMemo"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="오늘은..."
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:gravity="top"
+            android:maxLines="3"
+            android:layout_marginBottom="40dp" />
+
+        <!-- 저장 버튼 -->
+        <Button
+            android:id="@+id/btnSave"
+            style="@style/GradientButton"
+            android:text="♪ 감정 기록 완료"
+            android:textSize="18sp"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>

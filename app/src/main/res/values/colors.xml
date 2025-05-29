@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_pink">#FF6B9D</color>
+    <color name="primary_purple">#8B5CF6</color>
+    <color name="secondary_orange">#FFB366</color>
+    <color name="background_dark">#1A1B23</color>
+    <color name="card_dark">#2A2D3A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B3B8</color>
+    <color name="accent_gradient_start">#FF6B9D</color>
+    <color name="accent_gradient_end">#8B5CF6</color>
+</resources>

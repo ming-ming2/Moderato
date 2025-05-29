@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <group android:name="wave_group">
+        <path
+            android:pathData="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"
+            android:strokeWidth="2"
+            android:strokeColor="@color/primary_pink"
+            android:fillColor="@android:color/transparent" />
+
+        <path
+            android:pathData="M100,100 m-60,0 a60,60 0 1,1 120,0 a60,60 0 1,1 -120,0"
+            android:strokeWidth="2"
+            android:strokeColor="@color/primary_purple"
+            android:fillColor="@android:color/transparent" />
+
+        <path
+            android:pathData="M100,100 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0"
+            android:strokeWidth="2"
+            android:strokeColor="@color/secondary_orange"
+            android:fillColor="@android:color/transparent" />
+
+        <path
+            android:pathData="M100,100 m-20,0 a20,20 0 1,1 40,0 a20,20 0 1,1 -40,0"
+            android:fillColor="@color/primary_pink" />
+    </group>
+
+</vector>
