@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/moderato/MainActivity.kt
 package com.example.moderato
 
 import android.app.AlertDialog
@@ -22,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var emotionTimelineContainer: LinearLayout
     private lateinit var tvEmptyMessage: TextView
     private lateinit var btnAddEmotion: Button
+    private lateinit var btnEmotionTuner: Button
 
     private lateinit var todayChordCard: LinearLayout
     private lateinit var tvChordSymbol: TextView
@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         emotionTimelineContainer = findViewById(R.id.emotionTimelineContainer)
         tvEmptyMessage = findViewById(R.id.tvEmptyMessage)
         btnAddEmotion = findViewById(R.id.btnAddEmotion)
+        btnEmotionTuner = findViewById(R.id.btnEmotionTuner)
     }
 
     private fun initChordViews() {
@@ -109,6 +110,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        btnEmotionTuner.setOnClickListener {
+            startEmotionTuner()
+        }
+
         updateAddEmotionButton()
     }
 
@@ -123,6 +128,38 @@ class MainActivity : AppCompatActivity() {
 
         todayChordCard.setOnClickListener {
             showChordDetails()
+        }
+    }
+
+    private fun startEmotionTuner() {
+        if (emotionData.isEmpty()) {
+            Toast.makeText(this, "먼저 현재 감정을 기록해주세요!", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, EmotionInputActivity::class.java)
+            startActivityForResult(intent, EMOTION_INPUT_REQUEST)
+            return
+        }
+
+        val latestEmotion = emotionData.lastOrNull()
+        if (latestEmotion != null) {
+            val intent = Intent(this, EmotionTunerActivity::class.java)
+            intent.putExtra("CURRENT_EMOTION_SYMBOL", latestEmotion.emotionSymbol)
+            intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(latestEmotion.emotionSymbol))
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "감정 데이터를 불러올 수 없습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getEmotionNameFromSymbol(symbol: String): String {
+        return when(symbol) {
+            "♪" -> "기쁨"
+            "♩" -> "평온"
+            "♫" -> "설렘"
+            "♭" -> "슬픔"
+            "♯" -> "화남"
+            "𝄢" -> "불안"
+            "♡" -> "사랑"
+            else -> "알 수 없음"
         }
     }
 
@@ -300,10 +337,6 @@ class MainActivity : AppCompatActivity() {
             }
             setPadding(16, 12, 16, 12)
             background = ContextCompat.getDrawable(this@MainActivity, R.drawable.emotion_timeline_bg)
-
-            setOnClickListener {
-                editEmotion(emotion)
-            }
         }
 
         val timeIcon = TextView(this).apply {
@@ -359,28 +392,70 @@ class MainActivity : AppCompatActivity() {
             text = emotion.emotionText
             textSize = 14f
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             maxLines = 1
             ellipsize = android.text.TextUtils.TruncateAt.END
         }
 
-        val editHint = TextView(this).apply {
-            text = "✏️"
-            textSize = 12f
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
+        val buttonContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        }
+
+        val tunerButton = TextView(this).apply {
+            text = "🎚️"
+            textSize = 16f
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.secondary_orange))
+            background = ContextCompat.getDrawable(this@MainActivity, R.drawable.chord_button_bg)
+            setPadding(12, 8, 12, 8)
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                setMargins(8, 0, 0, 0)
+                setMargins(4, 0, 4, 0)
+            }
+
+            setOnClickListener {
+                val intent = Intent(this@MainActivity, EmotionTunerActivity::class.java)
+                intent.putExtra("CURRENT_EMOTION_SYMBOL", emotion.emotionSymbol)
+                intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(emotion.emotionSymbol))
+                startActivity(intent)
+
+                Toast.makeText(this@MainActivity, "${getEmotionNameFromSymbol(emotion.emotionSymbol)} 감정을 조율해보세요!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val editButton = TextView(this).apply {
+            text = "✏️"
+            textSize = 14f
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
+            background = ContextCompat.getDrawable(this@MainActivity, R.drawable.chord_button_bg)
+            setPadding(8, 8, 8, 8)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                setMargins(4, 0, 0, 0)
+            }
+
+            setOnClickListener {
+                editEmotion(emotion)
             }
         }
 
         emotionContainer.addView(emotionIcon)
         emotionContainer.addView(emotionText)
-        emotionContainer.addView(editHint)
+
+        buttonContainer.addView(tunerButton)
+        buttonContainer.addView(editButton)
 
         contentContainer.addView(timeText)
         contentContainer.addView(emotionContainer)
 
         container.addView(timeIcon)
         container.addView(contentContainer)
+        container.addView(buttonContainer)
+
+        container.setOnClickListener {
+            val intent = Intent(this, EmotionTunerActivity::class.java)
+            intent.putExtra("CURRENT_EMOTION_SYMBOL", emotion.emotionSymbol)
+            intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(emotion.emotionSymbol))
+            startActivity(intent)
+        }
 
         return container
     }
@@ -774,8 +849,9 @@ class MainActivity : AppCompatActivity() {
             append("3. 감정 강도와 태그를 설정해보세요\n")
             append("4. 기록된 감정은 악보로 표현됩니다\n")
             append("5. 타임라인에서 감정을 클릭하면 수정할 수 있어요\n")
-            append("6. 오늘의 감정 코드를 확인하고 공유해보세요\n")
-            append("7. 설정에서 코드 히스토리와 통계를 확인하세요\n\n")
+            append("6. '🎚️ 감정 조율' 버튼으로 감정을 조절하세요\n")
+            append("7. 오늘의 감정 코드를 확인하고 공유해보세요\n")
+            append("8. 설정에서 코드 히스토리와 통계를 확인하세요\n\n")
             append("💾 모든 감정은 자동으로 저장됩니다!")
         }
 
