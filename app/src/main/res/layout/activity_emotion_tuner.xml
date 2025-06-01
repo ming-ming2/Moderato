@@ -41,7 +41,7 @@
 
         </LinearLayout>
 
-        <!-- 현재 감정 섹션 -->
+        <!-- 현재 감정 섹션 (자연스럽게 표시) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:id="@+id/tvCurrentEmotionIcon"
@@ -94,7 +94,7 @@
                         android:id="@+id/tvCurrentIntensity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="mf (보통으로)"
+                        android:text="f (세게)"
                         android:textSize="14sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginTop="4dp" />
@@ -104,46 +104,14 @@
             </LinearLayout>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="감정 강도 조절"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="8dp" />
-
-            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="pp"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginEnd="8dp" />
-
-                <SeekBar
-                    android:id="@+id/seekBarCurrent"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:max="4"
-                    android:progress="2"
-                    android:progressTint="@color/primary_pink"
-                    android:thumbTint="@color/primary_pink" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ff"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginStart="8dp" />
-
-            </LinearLayout>
+                android:text="💡 조율을 통해 목표 감정으로 이끌어보세요."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/edittext_bg"
+                android:padding="12dp"
+                android:lineSpacingExtra="2dp" />
 
         </LinearLayout>
 
@@ -294,7 +262,7 @@
                 android:id="@+id/tvActivityGuide"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🔥➜🌊 화남을 평온으로 조절하기\n\n1️⃣ 4-7-8 호흡법 (5분)\n2️⃣ 차가운 물로 손목 식히기\n3️⃣ 클래식 음악 감상\n4️⃣ 천천히 걷기\n\n💡 격한 감정을 차분히 가라앉히는 시간이에요"
+                android:text="🔥➜🌊 화남을 평온으로 조절하기\n\n단계별로 차근차근 진행하면 화를 평온하게 가라앉힐 수 있어요.\n\n예상 소요시간: 5-10분"
                 android:textSize="14sp"
                 android:textColor="@color/text_primary"
                 android:lineSpacingExtra="4dp" />
@@ -337,7 +305,7 @@
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
-                android:max="10"
+                android:max="5"
                 android:progress="0"
                 android:progressTint="@color/primary_pink"
                 android:layout_marginBottom="8dp" />
@@ -346,26 +314,28 @@
                 android:id="@+id/tvTuningStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🎼 감정 조율을 시작합니다..."
+                android:text="🎼 조율 준비 중..."
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary"
                 android:gravity="center" />
 
         </LinearLayout>
 
-        <!-- 조율 버튼 -->
+        <!-- 여기에 동적으로 단계별 UI가 추가됩니다 -->
+
+        <!-- 조율 시작 버튼 -->
         <Button
             android:id="@+id/btnStartTuning"
             style="@style/GradientButton"
-            android:text="🎼 조율 시작"
+            android:text="🎼 단계별 조율 시작"
             android:textSize="18sp"
             android:layout_marginTop="16dp" />
 
-        <!-- 추가 도움말 -->
+        <!-- 감성적인 도움말 -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💡 팁: 조율은 단순히 감정을 바꾸는 것이 아니라, 현재 감정을 이해하고 적절히 조절하는 과정입니다. 천천히 자신만의 속도로 진행해보세요."
+            android:text="💫 감정 조율은 마음의 선율을 다시 맞추는 시간입니다. 급하지 않게, 자신만의 속도로 천천히 진행해보세요. 작은 변화도 소중한 성장입니다."
             android:textSize="12sp"
             android:textColor="@color/text_secondary"
             android:background="@drawable/edittext_bg"

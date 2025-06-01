@@ -325,6 +325,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // MainActivity.kt의 createTimelineItem 메서드 수정
+
     private fun createTimelineItem(emotion: EmotionRecord): LinearLayout {
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -402,35 +404,17 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         }
 
-        val tunerButton = TextView(this).apply {
-            text = "🎚️"
-            textSize = 16f
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.secondary_orange))
-            background = ContextCompat.getDrawable(this@MainActivity, R.drawable.chord_button_bg)
-            setPadding(12, 8, 12, 8)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                setMargins(4, 0, 4, 0)
-            }
-
-            setOnClickListener {
-                val intent = Intent(this@MainActivity, EmotionTunerActivity::class.java)
-                intent.putExtra("CURRENT_EMOTION_SYMBOL", emotion.emotionSymbol)
-                intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(emotion.emotionSymbol))
-                startActivity(intent)
-
-                Toast.makeText(this@MainActivity, "${getEmotionNameFromSymbol(emotion.emotionSymbol)} 감정을 조율해보세요!", Toast.LENGTH_SHORT).show()
-            }
-        }
+        // 🎚️ 조율 버튼 제거!
+        // 각 기록마다 조율 버튼이 있는 건 논리적으로 맞지 않음
+        // 과거의 감정을 왜 조율하나요?
 
         val editButton = TextView(this).apply {
             text = "✏️"
             textSize = 14f
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
             background = ContextCompat.getDrawable(this@MainActivity, R.drawable.chord_button_bg)
-            setPadding(8, 8, 8, 8)
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                setMargins(4, 0, 0, 0)
-            }
+            setPadding(12, 8, 12, 8)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
 
             setOnClickListener {
                 editEmotion(emotion)
@@ -440,7 +424,7 @@ class MainActivity : AppCompatActivity() {
         emotionContainer.addView(emotionIcon)
         emotionContainer.addView(emotionText)
 
-        buttonContainer.addView(tunerButton)
+        // 수정 버튼만 추가 (조율 버튼 제거)
         buttonContainer.addView(editButton)
 
         contentContainer.addView(timeText)
@@ -450,14 +434,35 @@ class MainActivity : AppCompatActivity() {
         container.addView(contentContainer)
         container.addView(buttonContainer)
 
+        // 클릭 시 상세 정보 표시 (조율이 아닌 정보 확인)
         container.setOnClickListener {
-            val intent = Intent(this, EmotionTunerActivity::class.java)
-            intent.putExtra("CURRENT_EMOTION_SYMBOL", emotion.emotionSymbol)
-            intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(emotion.emotionSymbol))
-            startActivity(intent)
+            showEmotionDetail(emotion)
         }
 
         return container
+    }
+
+    // 감정 상세 정보 표시 (조율 대신)
+    private fun showEmotionDetail(emotion: EmotionRecord) {
+        val timeKorean = getTimeOfDayKorean(emotion.timeOfDay)
+        val emotionName = getEmotionNameFromSymbol(emotion.emotionSymbol)
+
+        val message = buildString {
+            append("🎵 ${timeKorean} 감정 기록\n\n")
+            append("감정: ${emotion.emotionSymbol} ${emotionName}\n")
+            append("기록 날짜: ${emotion.date}\n")
+            append("시간대: ${timeKorean}\n\n")
+            append("💡 이 감정을 수정하려면 '✏️' 버튼을 눌러주세요.")
+        }
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("📋 감정 기록 상세")
+        builder.setMessage(message)
+        builder.setPositiveButton("확인", null)
+        builder.setNeutralButton("수정하기") { _, _ ->
+            editEmotion(emotion)
+        }
+        builder.show()
     }
 
     private fun editEmotion(emotion: EmotionRecord) {
