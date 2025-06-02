@@ -21,9 +21,12 @@ class EmotionTunerActivity : AppCompatActivity() {
     private lateinit var tvTuningStatus: TextView
 
     private lateinit var btnStartTuning: Button
-    private lateinit var btnSelectActivity: Button
     private lateinit var tvActivityGuide: TextView
     private lateinit var linearTuningProgress: LinearLayout
+
+    // 치료법 선택 관련 위젯들 (새로 추가)
+    private lateinit var rgTherapyMethod: RadioGroup
+    private lateinit var tvTherapyDescription: TextView
 
     // 조율 단계 관련 (수업 4주차 - 위젯 활용)
     private lateinit var currentStepContainer: LinearLayout
@@ -39,13 +42,30 @@ class EmotionTunerActivity : AppCompatActivity() {
     private var targetEmotionSymbol = "♩"
     private var targetEmotionName = "평온"
 
+    // 선택된 치료법 저장 (새로 추가)
+    private var selectedTherapyMethod = "DEFAULT"
+
     private val intensityLevels = arrayOf("pp", "p", "mf", "f", "ff")
     private val intensityTexts = arrayOf("매우 여리게", "여리게", "보통으로", "세게", "매우 세게")
+
+    // 치료법별 설명 (수업 3주차 - 배열 활용)
+    private val therapyDescriptions = mapOf(
+        "DBT" to "💪 DBT 볼륨 조절법: 감정의 강도를 조절하여 압도되지 않도록 도와드립니다. 특히 강한 감정을 다루는 데 효과적입니다.",
+        "CBT" to "🧠 CBT 조성 바꾸기: 상황을 바라보는 관점을 바꿔서 감정의 색깔을 바꿔봅니다. 부정적 생각을 균형잡힌 시각으로 전환합니다.",
+        "ACT" to "🌊 ACT 자연스러운 전조: 감정을 억지로 바꾸려 하지 않고 자연스럽게 흘러가도록 도와드립니다. 감정과 평화롭게 공존하는 법을 배웁니다.",
+        "DEFAULT" to "💡 기본 조율법: 누구나 쉽게 따라할 수 있는 단계별 감정 조율 방법입니다."
+    )
 
     // 조율 단계 관련 (수업 3주차 - 배열 활용)
     private var currentStepIndex = 0
     private var tuningSteps: List<TuningStep> = listOf()  // var로 변경하여 재할당 가능
     private var isActiveTuning = false
+
+    // CBT 인지 재구조화 관련 변수들 추가
+    private var userNegativeThought = ""      // 1단계: 사용자가 입력한 부정적 생각
+    private var userAlternativeThought = ""   // 3단계: 사용자가 입력한 대안적 생각
+    private var userBalancedThought = ""      // 4단계: 최종 균형잡힌 생각
+    private var isCBTInteractive = false      // CBT 대화상자 진행 중인지 확인
 
     // 수업 3주차 - 데이터 클래스 활용
     data class TuningStep(
@@ -86,9 +106,12 @@ class EmotionTunerActivity : AppCompatActivity() {
         tvTuningStatus = findViewById(R.id.tvTuningStatus)
 
         btnStartTuning = findViewById(R.id.btnStartTuning)
-        btnSelectActivity = findViewById(R.id.btnSelectActivity)
         tvActivityGuide = findViewById(R.id.tvActivityGuide)
         linearTuningProgress = findViewById(R.id.linearTuningProgress)
+
+        // 치료법 선택 위젯들 추가
+        rgTherapyMethod = findViewById(R.id.rgTherapyMethod)
+        tvTherapyDescription = findViewById(R.id.tvTherapyDescription)
 
         // 동적으로 단계별 조율 UI 생성 (수업 5주차 - 동적 레이아웃)
         createStepByStepUI()
@@ -190,13 +213,36 @@ class EmotionTunerActivity : AppCompatActivity() {
             }
         }
 
-        btnSelectActivity.setOnClickListener {
-            showActivitySelectionDialog()
-        }
-
         // 목표 감정 아이콘 클릭으로 변경
         tvTargetEmotionIcon.setOnClickListener {
             showTargetEmotionSelectionDialog()
+        }
+
+        // 치료법 선택 리스너 (수업 4주차 - RadioGroup 활용)
+        rgTherapyMethod.setOnCheckedChangeListener { _, checkedId ->
+            selectedTherapyMethod = when(checkedId) {
+                R.id.rbDBT -> "DBT"
+                R.id.rbCBT -> "CBT"
+                R.id.rbACT -> "ACT"
+                R.id.rbDefault -> "DEFAULT"
+                else -> "DEFAULT"
+            }
+
+            // 선택에 따라 설명 업데이트
+            tvTherapyDescription.text = therapyDescriptions[selectedTherapyMethod]
+
+            // 조율 단계 재구성
+            setupTuningSteps()
+            generateActivityGuide()
+
+            // 선택 피드백
+            val methodName = when(selectedTherapyMethod) {
+                "DBT" -> "볼륨 조절법"
+                "CBT" -> "조성 바꾸기"
+                "ACT" -> "자연스러운 전조"
+                else -> "기본 조율법"
+            }
+            Toast.makeText(this, "🎼 ${methodName}이 선택되었습니다", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -277,129 +323,260 @@ class EmotionTunerActivity : AppCompatActivity() {
         val targetIntensity = seekBarTarget.progress + 1
 
         tuningSteps = when {
+            // 먼저 치료법별로 분기 (수업 3주차 - when문 활용)
+            selectedTherapyMethod == "DBT" -> createDBTSteps()
+            selectedTherapyMethod == "CBT" -> createCBTSteps()
+            selectedTherapyMethod == "ACT" -> createACTSteps()
+
+            // 기존 감정별 분기 (DEFAULT 또는 치료법 선택 안됨)
             currentEmotionSymbol == "♯" && targetEmotionSymbol == "♩" -> {
-                // 화남 → 평온 조율 단계
-                listOf(
-                    TuningStep(
-                        "1단계: 현재 감정 인식",
-                        "지금 화가 났다는 것을 인정해보세요.\n'나는 지금 화가 나 있구나'라고 속으로 말해보세요.\n\n화를 느끼는 것은 자연스러운 일입니다.",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "2단계: 4-7-8 호흡법",
-                        "• 4초 동안 코로 숨을 들이마세요\n• 7초 동안 숨을 참으세요\n• 8초 동안 입으로 천천히 내쉬세요\n\n이것을 3회 반복해주세요.",
-                        "약 2분"
-                    ),
-                    TuningStep(
-                        "3단계: 신체 이완",
-                        "어깨와 목의 긴장을 풀어주세요.\n\n• 어깨를 올렸다 내리기 (5회)\n• 목을 좌우로 천천히 돌리기\n• 주먹을 꽉 쥐었다 펴기 (5회)",
-                        "약 1분"
-                    ),
-                    TuningStep(
-                        "4단계: 생각 정리",
-                        "화의 원인을 객관적으로 생각해보세요.\n\n• 정말 화낼 만한 일인가요?\n• 이 감정이 나에게 도움이 될까요?\n• 더 좋은 해결책은 없을까요?",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "5단계: 평온 상상",
-                        "마음이 평온한 상태를 상상해보세요.\n\n차분한 호수나 조용한 숲을 떠올리며,\n그 평온함이 마음 속으로 스며드는 것을 느껴보세요.",
-                        "약 1분"
-                    )
-                )
+                createDefaultAngerToCalm()
             }
             currentEmotionSymbol == "♭" && targetEmotionSymbol == "♪" -> {
-                // 슬픔 → 기쁨 조율 단계
-                listOf(
-                    TuningStep(
-                        "1단계: 슬픔 받아들이기",
-                        "지금 슬픈 마음을 있는 그대로 받아들여보세요.\n슬픔도 소중한 감정 중 하나입니다.\n\n억지로 밀어내지 말고 잠시 함께 있어보세요.",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "2단계: 감사한 일 떠올리기",
-                        "힘들지만 감사한 일 3가지를 떠올려보세요.\n\n작은 것이라도 괜찮습니다:\n• 오늘 마신 따뜻한 차\n• 안부를 묻는 사람\n• 지금 이 순간",
-                        "약 2분"
-                    ),
-                    TuningStep(
-                        "3단계: 좋은 기억 소환",
-                        "기분 좋았던 기억을 하나 떠올려보세요.\n\n그때의 느낌, 소리, 냄새까지\n생생하게 기억해보세요.\n그 기쁨이 지금도 가능함을 느껴보세요.",
-                        "약 2분"
-                    ),
-                    TuningStep(
-                        "4단계: 미소 짓기",
-                        "거울을 보며 (또는 상상으로)\n작은 미소를 지어보세요.\n\n억지로라도 미소를 지으면\n뇌가 기쁨을 느끼기 시작합니다.",
-                        "약 1분"
-                    )
-                )
+                createDefaultSadnessToJoy()
             }
             currentEmotionSymbol == "𝄢" && targetEmotionSymbol == "♩" -> {
-                // 불안 → 평온 조율 단계
-                listOf(
-                    TuningStep(
-                        "1단계: 현재에 집중 (5-4-3-2-1)",
-                        "지금 이 순간에 집중해보세요:\n\n• 보이는 것 5가지\n• 들리는 것 4가지\n• 만져지는 것 3가지\n• 냄새나는 것 2가지\n• 맛나는 것 1가지",
-                        "약 3분"
-                    ),
-                    TuningStep(
-                        "2단계: 복식호흡",
-                        "배로 숨쉬기를 연습해보세요.\n\n• 한 손은 가슴에, 한 손은 배에\n• 배가 올라오도록 깊게 들이마시기\n• 천천히 내쉬면서 배가 들어가게\n\n5회 반복해주세요.",
-                        "약 2분"
-                    ),
-                    TuningStep(
-                        "3단계: 안전 확인",
-                        "지금 이 순간 당신은 안전합니다.\n\n주변을 둘러보고 확인해보세요:\n• 위험한 것이 있나요?\n• 지금 당장 해결해야 할 일이 있나요?\n\n'지금 여기는 안전하다'고 말해보세요.",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "4단계: 점진적 이완",
-                        "발끝부터 머리까지 차례로 힘을 빼보세요.\n\n• 발가락에서 힘 빼기\n• 다리에서 힘 빼기\n• 허리, 어깨에서 힘 빼기\n• 얼굴 근육 이완하기",
-                        "약 2분"
-                    )
-                )
+                createDefaultAnxietyToCalm()
             }
             currentIntensity > targetIntensity -> {
-                // 강도 낮추기 (일반적인 경우)
-                listOf(
-                    TuningStep(
-                        "1단계: 현재 강도 인식",
-                        "지금 감정의 강도가 ${intensityLevels[currentIntensity-1]}라는 것을 인식해보세요.\n\n이 강도를 ${intensityLevels[targetIntensity-1]}로 낮춰보겠습니다.",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "2단계: 깊은 호흡",
-                        "천천히 깊게 호흡하여 긴장을 풀어보세요.\n\n• 5초 들이마시기\n• 5초 참기\n• 5초 내쉬기\n\n3회 반복해주세요.",
-                        "약 1분"
-                    ),
-                    TuningStep(
-                        "3단계: 신체 이완",
-                        "몸의 긴장을 풀어주세요.\n\n• 어깨 힘 빼기\n• 얼굴 근육 이완\n• 손과 발의 힘 빼기",
-                        "약 1분"
-                    )
-                )
+                createDefaultIntensityReduction()
             }
             else -> {
-                // 기본 단계
-                listOf(
-                    TuningStep(
-                        "1단계: 현재 감정 확인",
-                        "지금 ${currentEmotionName} 상태라는 것을 확인해보세요.\n\n이 감정을 ${targetEmotionName}으로 조율해보겠습니다.",
-                        "자유롭게"
-                    ),
-                    TuningStep(
-                        "2단계: 목표 상태 상상",
-                        "${targetEmotionName} 상태가 어떤 느낌인지 상상해보세요.\n\n그 상태에서의 호흡, 자세, 표정을 떠올려보세요.",
-                        "약 1분"
-                    ),
-                    TuningStep(
-                        "3단계: 점진적 전환",
-                        "천천히 목표 감정으로 마음을 이끌어보세요.\n\n급하지 않게, 자연스럽게 변화해보세요.",
-                        "자유롭게"
-                    )
-                )
+                createDefaultGeneralSteps()
             }
         }
 
         progressBarTuning.max = tuningSteps.size
+    }
+
+    // 치료법별 조율 단계 생성 메소드들 (수업 3주차 - 메소드와 when문 활용)
+
+    private fun createDBTSteps(): List<TuningStep> {
+        return when {
+            currentEmotionSymbol == "♯" -> createDBTAngerSteps()
+            currentEmotionSymbol == "♭" -> createDBTSadnessSteps()
+            currentEmotionSymbol == "𝄢" -> createDBTAnxietySteps()
+            else -> createDBTGeneralSteps()
+        }
+    }
+
+    private fun createCBTSteps(): List<TuningStep> {
+        return when {
+            currentEmotionSymbol == "♯" -> createCBTAngerSteps()
+            currentEmotionSymbol == "♭" -> createCBTSadnessSteps()
+            currentEmotionSymbol == "𝄢" -> createCBTAnxietySteps()
+            else -> createCBTGeneralSteps()
+        }
+    }
+
+    private fun createACTSteps(): List<TuningStep> {
+        return when {
+            currentEmotionSymbol == "♯" -> createACTAngerSteps()
+            currentEmotionSymbol == "♭" -> createACTSadnessSteps()
+            currentEmotionSymbol == "𝄢" -> createACTAnxietySteps()
+            else -> createACTGeneralSteps()
+        }
+    }
+
+    // DBT 화남 조율 (볼륨 조절법)
+    private fun createDBTAngerSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep(
+                "1단계: 🛑 페르마타 (감정 멈춤)",
+                "지금 이 순간 화난 감정을 인식하고 잠시 멈춰봅시다.\n\n'내가 지금 화가 나 있구나'라고 속으로 말해보세요.\n\n🎼 페르마타처럼 이 순간을 길게 유지해보세요.",
+                "자유롭게"
+            ),
+            TuningStep(
+                "2단계: 🎚️ 감정 볼륨 낮추기 (TIP 기법)",
+                "감정의 볼륨을 물리적으로 낮춰봅시다:\n\n• 차가운 물로 얼굴 씻기 (Temperature)\n• 제자리에서 30초 뛰기 (Intense exercise)\n• 4-7-8 호흡 3회 (Paced breathing)\n• 주먹 쥐었다 펴기 5회 (Paired muscle)",
+                "약 3분"
+            ),
+            TuningStep(
+                "3단계: 🎼 반대 행동하기 (Opposite Action)",
+                "화남과 반대되는 행동을 해봅시다:\n\n• 화날 때 → 부드럽게 말하기\n• 소리치고 싶을 때 → 속삭이기\n• 공격하고 싶을 때 → 감사 표현하기\n\n🎵 분노의 포르테를 피아노로 바꿔보세요.",
+                "약 2분"
+            ),
+            TuningStep(
+                "4단계: 🎚️ 볼륨 점검하기",
+                "지금 감정의 볼륨이 어느 정도인지 확인해보세요.\n\n처음 ${intensityLevels[currentIntensity-1]}에서 얼마나 낮아졌나요?\n\n목표는 ${intensityLevels[seekBarTarget.progress]}입니다.",
+                "자유롭게"
+            )
+        )
+    }
+
+    // CBT 전용 단계 생성 메소드들 (Enhanced with Interactive Features)
+    private fun createCBTAngerSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep(
+                "1단계: 🎼 부정적 생각 포착하기",
+                "화가 나게 만드는 생각을 찾아봅시다.\n\n'어떤 생각이 지금 화나게 하고 있나요?'\n\n생각을 입력해보세요.",
+                "자유롭게"
+            ),
+            TuningStep(
+                "2단계: 🧠 생각 검증하기",
+                "입력하신 생각을 함께 검토해봅시다.\n\n이 생각이 정말 100% 사실인지 확인해보겠습니다.",
+                "약 2분"
+            ),
+            TuningStep(
+                "3단계: 🎵 대안적 관점 찾기",
+                "같은 상황을 다르게 해석할 수 있는 방법을 찾아봅시다.\n\n다른 가능성이나 관점을 생각해보세요.",
+                "약 3분"
+            ),
+            TuningStep(
+                "4단계: 🎼 균형잡힌 생각 완성",
+                "새로운 관점으로 상황을 재조율해봅시다.\n\n더 현실적이고 도움되는 생각으로 바꿔보겠습니다.",
+                "약 2분"
+            ),
+            TuningStep(
+                "5단계: 🌈 새로운 조성으로 연주",
+                "바뀐 생각으로 감정이 어떻게 달라졌는지 확인해봅시다.\n\n단조에서 장조로 조성이 바뀌었나요?",
+                "자유롭게"
+            )
+        )
+    }
+
+    private fun createCBTSadnessSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep(
+                "1단계: 🎼 슬픈 생각 포착하기",
+                "슬픔을 만드는 생각을 찾아봅시다.\n\n'어떤 생각이 슬프게 만드나요?'",
+                "자유롭게"
+            ),
+            TuningStep(
+                "2단계: 🧠 현실성 검토하기",
+                "이 생각이 얼마나 현실적인지 살펴봅시다.",
+                "약 2분"
+            ),
+            TuningStep(
+                "3단계: 🎵 희망적 관점 찾기",
+                "같은 상황에서 희망을 찾을 수 있는 관점을 생각해봅시다.",
+                "약 3분"
+            ),
+            TuningStep(
+                "4단계: 🌈 밝은 생각으로 전환",
+                "더 희망적이고 건설적인 생각으로 바꿔봅시다.",
+                "약 2분"
+            )
+        )
+    }
+
+    private fun createCBTAnxietySteps(): List<TuningStep> {
+        return listOf(
+            TuningStep(
+                "1단계: 🎼 불안한 생각 포착하기",
+                "불안을 만드는 생각을 찾아봅시다.\n\n'무엇이 걱정되나요?'",
+                "자유롭게"
+            ),
+            TuningStep(
+                "2단계: 🧠 확률적 사고하기",
+                "걱정하는 일이 실제로 일어날 확률을 생각해봅시다.",
+                "약 2분"
+            ),
+            TuningStep(
+                "3단계: 🎵 대처 가능성 찾기",
+                "설령 일어나더라도 대처할 수 있는 방법을 생각해봅시다.",
+                "약 3분"
+            ),
+            TuningStep(
+                "4단계: 🌈 현실적 관점 완성",
+                "더 현실적이고 안정적인 생각으로 바꿔봅시다.",
+                "약 2분"
+            )
+        )
+    }
+
+    private fun createCBTGeneralSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("CBT 1단계: 생각 포착하기", "어떤 생각이 이 감정을 만드나요?", "2분"),
+            TuningStep("CBT 2단계: 생각 검토하기", "이 생각이 도움이 되나요? 현실적인가요?", "3분"),
+            TuningStep("CBT 3단계: 새로운 관점", "더 균형잡힌 생각으로 바꿔봅시다.", "2분")
+        )
+    }
+
+    // ACT 화남 조율 (자연스러운 전조)
+    private fun createACTAngerSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep(
+                "1단계: 🌊 감정 파도 관찰하기",
+                "화남이라는 감정을 파도처럼 관찰해봅시다.\n\n바꾸려 하지 말고, 판단하지 말고,\n그저 '아, 지금 화남이라는 파도가 왔구나' 하고 지켜봅시다.\n\n🎵 음악의 크레센도처럼 자연스러운 흐름입니다.",
+                "약 2분"
+            ),
+            TuningStep(
+                "2단계: 🎶 감정과 나 분리하기",
+                "'나는 화가 나 있다'가 아니라\n'지금 화남이라는 감정을 경험하고 있다'고 말해보세요.\n\n당신은 화남 그 자체가 아닙니다.\n화남을 경험하는 관찰자입니다.\n\n🎼 연주자와 음악이 다르듯이요.",
+                "약 2분"
+            ),
+            TuningStep(
+                "3단계: 🎵 가치 기반 행동하기",
+                "지금 화가 나더라도 중요한 가치에 따라 행동해봅시다:\n\n• 가족과의 관계가 중요하다면?\n• 성장이 중요하다면?\n• 평화가 중요하다면?\n\n감정 상태와 관계없이 가치에 따라 움직여보세요.",
+                "약 3분"
+            ),
+            TuningStep(
+                "4단계: 🌊 자연스러운 전조 완성",
+                "화남에서 평온으로 억지로 바꾸지 않았지만,\n자연스럽게 변화가 일어났나요?\n\n🎶 강제적인 전조가 아닌 자연스러운 화성 진행처럼\n감정도 자연스럽게 흘러갑니다.",
+                "자유롭게"
+            )
+        )
+    }
+
+    // 간단한 예시들 (나머지 감정들)
+    private fun createDBTSadnessSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("1단계: 슬픔 볼륨 인식", "DBT 방식으로 슬픔의 강도를 확인해봅시다.", "1분"),
+            TuningStep("2단계: PLEASE 기법", "기본 욕구 충족으로 감정 조절력을 높여봅시다.\n• 충분한 수면\n• 균형잡힌 식사\n• 운동하기", "3분"),
+            TuningStep("3단계: 반대 행동", "슬플 때는 기분 좋아지는 활동을 해봅시다.", "2분")
+        )
+    }
+
+    private fun createACTSadnessSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("1단계: 슬픔 수용하기", "슬픔도 인간의 자연스러운 감정입니다.", "2분"),
+            TuningStep("2단계: 슬픔과 함께 걷기", "슬픔을 밀어내지 말고 함께 있어봅시다.", "3분"),
+            TuningStep("3단계: 가치 중심 행동", "슬프더라도 중요한 일은 계속해봅시다.", "2분")
+        )
+    }
+
+    // 나머지 메소드들도 비슷하게 구현...
+    private fun createDBTAnxietySteps(): List<TuningStep> = createDBTGeneralSteps()
+    private fun createACTAnxietySteps(): List<TuningStep> = createACTGeneralSteps()
+
+    private fun createDBTGeneralSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("DBT 1단계: 현재 감정 강도 확인", "지금 감정의 볼륨을 체크해봅시다.", "1분"),
+            TuningStep("DBT 2단계: 강도 조절 기법", "TIP 기법으로 감정 볼륨을 낮춰봅시다.", "3분"),
+            TuningStep("DBT 3단계: 목표 강도 달성", "원하는 볼륨에 도달했는지 확인해봅시다.", "1분")
+        )
+    }
+
+    private fun createACTGeneralSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("ACT 1단계: 감정 관찰하기", "감정을 바꾸려 하지 말고 관찰해봅시다.", "2분"),
+            TuningStep("ACT 2단계: 수용하기", "이 감정도 자연스러운 인간 경험입니다.", "2분"),
+            TuningStep("ACT 3단계: 가치 기반 행동", "감정과 관계없이 중요한 가치를 위해 행동해봅시다.", "3분")
+        )
+    }
+
+    // 기존 메소드들을 래핑
+    private fun createDefaultAngerToCalm(): List<TuningStep> {
+        return listOf(
+            TuningStep("1단계: 현재 감정 인식", "지금 화가 났다는 것을 인정해보세요.", "자유롭게"),
+            TuningStep("2단계: 4-7-8 호흡법", "4초 들이마시고, 7초 참고, 8초 내쉬기를 3회 반복하세요.", "약 2분"),
+            TuningStep("3단계: 신체 이완", "어깨와 목의 긴장을 풀어주세요.", "약 1분"),
+            TuningStep("4단계: 생각 정리", "화의 원인을 객관적으로 생각해보세요.", "자유롭게"),
+            TuningStep("5단계: 평온 상상", "마음이 평온한 상태를 상상해보세요.", "약 1분")
+        )
+    }
+
+    private fun createDefaultSadnessToJoy(): List<TuningStep> = createDefaultGeneralSteps()
+    private fun createDefaultAnxietyToCalm(): List<TuningStep> = createDefaultGeneralSteps()
+    private fun createDefaultIntensityReduction(): List<TuningStep> = createDefaultGeneralSteps()
+
+    private fun createDefaultGeneralSteps(): List<TuningStep> {
+        return listOf(
+            TuningStep("1단계: 현재 감정 확인", "지금 감정 상태를 확인해보세요.", "자유롭게"),
+            TuningStep("2단계: 목표 상태 상상", "원하는 감정 상태를 상상해보세요.", "약 1분"),
+            TuningStep("3단계: 점진적 전환", "천천히 목표 감정으로 이끌어보세요.", "자유롭게")
+        )
     }
 
     private fun startStepByStepTuning() {
@@ -417,6 +594,7 @@ class EmotionTunerActivity : AppCompatActivity() {
         Toast.makeText(this, "🎼 단계별 감정 조율을 시작합니다. 천천히 따라해보세요!", Toast.LENGTH_LONG).show()
     }
 
+    // showCurrentStep() 메소드 수정 - CBT 대화상자 추가
     private fun showCurrentStep() {
         if (currentStepIndex < tuningSteps.size) {
             val step = tuningSteps[currentStepIndex]
@@ -427,6 +605,17 @@ class EmotionTunerActivity : AppCompatActivity() {
             progressBarTuning.progress = currentStepIndex + 1
             tvTuningStatus.text = "${currentStepIndex + 1} / ${tuningSteps.size} 단계 진행 중"
 
+            // CBT 특별 처리 - 단계별 대화상자
+            if (selectedTherapyMethod == "CBT") {
+                when (currentStepIndex) {
+                    0 -> showCBTThoughtCaptureDialog()     // 1단계: 생각 포착
+                    1 -> showCBTThoughtValidationDialog()  // 2단계: 생각 검증
+                    2 -> showCBTAlternativeDialog()        // 3단계: 대안 찾기
+                    3 -> showCBTBalancedThoughtDialog()    // 4단계: 균형잡힌 생각
+                    4 -> showCBTCompletionDialog()         // 5단계: 완성 확인
+                }
+            }
+
             // 마지막 단계인지 확인
             if (currentStepIndex == tuningSteps.size - 1) {
                 btnStepNext.visibility = android.view.View.GONE
@@ -436,6 +625,254 @@ class EmotionTunerActivity : AppCompatActivity() {
                 btnStepComplete.visibility = android.view.View.GONE
             }
         }
+    }
+
+    // CBT 1단계: 부정적 생각 포착 대화상자
+    private fun showCBTThoughtCaptureDialog() {
+        val input = EditText(this).apply {
+            hint = when(currentEmotionSymbol) {
+                "♯" -> "예: 이건 말이 안 돼, 완전히 불공평해"
+                "♭" -> "예: 나는 실패작이야, 아무것도 잘 안 돼"
+                "𝄢" -> "예: 큰일 날 것 같아, 통제할 수 없어"
+                else -> "지금 어떤 생각이 드나요?"
+            }
+            setPadding(40, 30, 40, 30)
+            maxLines = 5
+            textSize = 16f
+            setTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.black))
+            setHintTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.darker_gray))
+            background = ContextCompat.getDrawable(this@EmotionTunerActivity, android.R.drawable.edit_text)
+        }
+
+        val questionText = when(currentEmotionSymbol) {
+            "♯" -> "🔥 화가 나게 하는 생각은 무엇인가요?"
+            "♭" -> "😢 슬프게 만드는 생각은 무엇인가요?"
+            "𝄢" -> "😰 불안하게 만드는 생각은 무엇인가요?"
+            else -> "🤔 어떤 생각이 이 감정을 만들고 있나요?"
+        }
+
+        val messageText = "$questionText\n\n자유롭게 떠오르는 생각을 적어보세요.\n\n📝 어떤 생각이든 괜찮습니다. 솔직하게 써보세요."
+
+        val builder = android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        builder.setTitle("🎼 CBT 1단계: 생각 포착")
+        builder.setMessage(messageText)
+        builder.setView(input)
+        builder.setPositiveButton("다음 단계로") { _, _ ->
+            userNegativeThought = input.text.toString().trim()
+            if (userNegativeThought.isEmpty()) {
+                userNegativeThought = "특별한 생각이 떠오르지 않음"
+            }
+            isCBTInteractive = true
+            Toast.makeText(this, "💭 생각이 포착되었습니다!\n\"$userNegativeThought\"", Toast.LENGTH_LONG).show()
+        }
+        builder.setNegativeButton("건너뛰기") { _, _ ->
+            userNegativeThought = "건너뜀"
+            Toast.makeText(this, "다음 단계로 넘어갑니다", Toast.LENGTH_SHORT).show()
+        }
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+    }
+
+    // CBT 2단계: 생각 검증 대화상자
+    private fun showCBTThoughtValidationDialog() {
+        val questions = when(currentEmotionSymbol) {
+            "♯" -> arrayOf(
+                "이 생각이 100% 사실인가요?",
+                "상대방이 정말 일부러 그런 걸까요?",
+                "내가 놓친 부분은 없을까요?",
+                "가장 친한 친구라면 뭐라고 할까요?"
+            )
+            "♭" -> arrayOf(
+                "이 생각이 100% 사실인가요?",
+                "내가 정말 모든 면에서 실패한 걸까요?",
+                "좋았던 순간들은 없었나요?",
+                "사랑하는 사람이라면 뭐라고 할까요?"
+            )
+            "𝄢" -> arrayOf(
+                "이 생각이 100% 사실인가요?",
+                "정말 그런 일이 일어날 확률이 높을까요?",
+                "설령 일어나더라도 해결할 방법이 없을까요?",
+                "과거에 비슷한 걱정이 현실이 된 적이 있나요?"
+            )
+            else -> arrayOf(
+                "이 생각이 100% 사실인가요?",
+                "다른 관점에서 볼 여지는 없을까요?",
+                "이 생각이 도움이 되나요?",
+                "더 현실적인 생각은 무엇일까요?"
+            )
+        }
+
+        val message = buildString {
+            append("💭 포착된 생각:\n")
+            append("\"$userNegativeThought\"\n\n")
+            append("🔍 이 생각을 함께 검토해봅시다:\n\n")
+            questions.forEachIndexed { index, question ->
+                append("${index + 1}. $question\n\n")
+            }
+            append("⏰ 천천히 각 질문에 대해 생각해보세요...")
+        }
+
+        val builder = android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        builder.setTitle("🧠 CBT 2단계: 생각 검증")
+        builder.setMessage(message)
+        builder.setPositiveButton("검토 완료했어요") { _, _ ->
+            Toast.makeText(this, "🔍 생각 검증이 완료되었습니다!\n다음 단계로 넘어갑니다.", Toast.LENGTH_SHORT).show()
+        }
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+    }
+
+    // CBT 3단계: 대안적 관점 대화상자
+    private fun showCBTAlternativeDialog() {
+        val input = EditText(this).apply {
+            hint = when(currentEmotionSymbol) {
+                "♯" -> "예: 실수일 수도 있고, 나름의 이유가 있을 수도 있어"
+                "♭" -> "예: 힘든 시기이지만 좋은 면도 있고, 성장의 기회야"
+                "𝄢" -> "예: 확률은 낮고, 일어나더라도 대처할 수 있어"
+                else -> "다른 관점에서는 어떻게 보일까요?"
+            }
+            setPadding(40, 30, 40, 30)
+            maxLines = 5
+            textSize = 16f
+            setTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.black))
+            setHintTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.darker_gray))
+            background = ContextCompat.getDrawable(this@EmotionTunerActivity, android.R.drawable.edit_text)
+        }
+
+        val suggestionText = when(currentEmotionSymbol) {
+            "♯" -> "💡 이런 관점은 어떨까요?\n• 상대방 입장에서 생각해보기\n• 선의로 해석할 여지 찾기\n• 내 기분 상태 고려하기"
+            "♭" -> "💡 이런 관점은 어떨까요?\n• 성공한 경험들 떠올리기\n• 배움의 기회로 보기\n• 일시적 상황임을 인식하기"
+            "𝄢" -> "💡 이런 관점은 어떨까요?\n• 실제 확률 계산해보기\n• 대처 방법 생각해보기\n• 과거 극복 경험 떠올리기"
+            else -> "💡 이런 관점은 어떨까요?\n• 다른 사람의 관점에서 보기\n• 긍정적 측면 찾아보기\n• 학습 기회로 여기기"
+        }
+
+        val messageText = "💭 원래 생각:\n\"$userNegativeThought\"\n\n🌈 같은 상황을 다른 관점에서 바라본다면?\n\n$suggestionText\n\n📝 새로운 관점을 써보세요:"
+
+        val builder = android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        builder.setTitle("🎵 CBT 3단계: 대안 관점")
+        builder.setMessage(messageText)
+        builder.setView(input)
+        builder.setPositiveButton("다음 단계로") { _, _ ->
+            userAlternativeThought = input.text.toString().trim()
+            if (userAlternativeThought.isEmpty()) {
+                userAlternativeThought = "다른 관점이 있을 수 있음"
+            }
+            Toast.makeText(this, "🌈 대안적 관점을 찾았습니다!\n\"$userAlternativeThought\"", Toast.LENGTH_LONG).show()
+        }
+        builder.setNegativeButton("건너뛰기") { _, _ ->
+            userAlternativeThought = "건너뜀"
+            Toast.makeText(this, "다음 단계로 넘어갑니다", Toast.LENGTH_SHORT).show()
+        }
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+    }
+
+    // CBT 4단계: 균형잡힌 생각 완성 대화상자
+    private fun showCBTBalancedThoughtDialog() {
+        val input = EditText(this).apply {
+            hint = when(currentEmotionSymbol) {
+                "♯" -> "예: 화는 나지만 이해할 여지도 있고, 건설적으로 해결해보자"
+                "♭" -> "예: 지금은 힘들지만 이것도 지나갈 것이고, 배울 점이 있어"
+                "𝄢" -> "예: 걱정되긴 하지만 확률은 낮고, 충분히 대처할 수 있어"
+                else -> "더 균형잡히고 현실적인 생각을 써보세요"
+            }
+            setPadding(40, 30, 40, 30)
+            maxLines = 6
+            textSize = 16f
+            setTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.black))
+            setHintTextColor(ContextCompat.getColor(this@EmotionTunerActivity, android.R.color.darker_gray))
+            background = ContextCompat.getDrawable(this@EmotionTunerActivity, android.R.drawable.edit_text)
+        }
+
+        val message = buildString {
+            append("🎼 지금까지의 과정:\n\n")
+            append("1️⃣ 원래 생각:\n\"$userNegativeThought\"\n\n")
+            append("2️⃣ 대안 관점:\n\"$userAlternativeThought\"\n\n")
+            append("3️⃣ 이제 둘을 종합해서 더 균형잡힌 생각을 만들어봅시다!\n\n")
+            append("💡 균형잡힌 생각의 특징:\n")
+            append("• 현실적이면서도 희망적\n")
+            append("• 극단적이지 않고 중간적\n")
+            append("• 도움이 되고 건설적\n\n")
+            append("📝 최종 균형잡힌 생각을 써보세요:")
+        }
+
+        val builder = android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        builder.setTitle("🎼 CBT 4단계: 균형잡힌 생각")
+        builder.setMessage(message)
+        builder.setView(input)
+        builder.setPositiveButton("완성했어요!") { _, _ ->
+            userBalancedThought = input.text.toString().trim()
+            if (userBalancedThought.isEmpty()) {
+                userBalancedThought = "더 균형잡힌 관점으로 보기"
+            }
+            Toast.makeText(this, "✨ 균형잡힌 생각이 완성되었습니다!\n\"$userBalancedThought\"", Toast.LENGTH_LONG).show()
+        }
+        builder.setNegativeButton("건너뛰기") { _, _ ->
+            userBalancedThought = "건너뜀"
+            Toast.makeText(this, "다음 단계로 넘어갑니다", Toast.LENGTH_SHORT).show()
+        }
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+    }
+
+    // CBT 5단계: 완성 확인 대화상자
+    private fun showCBTCompletionDialog() {
+        val emotionChange = when(currentEmotionSymbol) {
+            "♯" -> "화남이 줄어들고 이해심이 생겼나요?"
+            "♭" -> "슬픔이 덜해지고 희망이 보이나요?"
+            "𝄢" -> "불안이 줄어들고 안정감이 느껴지나요?"
+            else -> "감정에 변화가 있나요?"
+        }
+
+        val message = buildString {
+            append("🎊 CBT 인지 재구조화 완성!\n\n")
+            append("🎼 생각의 조성 변화:\n\n")
+            append("🔴 처음 생각 (단조):\n\"$userNegativeThought\"\n\n")
+            append("🟢 새로운 생각 (장조):\n\"$userBalancedThought\"\n\n")
+            append("💫 감정 체크: $emotionChange\n\n")
+            append("🎵 단조에서 장조로 조성이 바뀌듯,\n생각이 바뀌면 감정도 따라 바뀝니다!\n\n")
+            append("✨ 새로운 관점으로 하루를 연주해보세요!")
+        }
+
+        val builder = android.app.AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+        builder.setTitle("🌈 CBT 조성 바꾸기 완료!")
+        builder.setMessage(message)
+        builder.setPositiveButton("정말 좋아졌어요! 😊") { _, _ ->
+            Toast.makeText(this, "🎊 CBT 조성 바꾸기 대성공!\n새로운 관점으로 세상을 바라보세요!", Toast.LENGTH_LONG).show()
+        }
+        builder.setNeutralButton("조금 나아졌어요 🙂") { _, _ ->
+            Toast.makeText(this, "🎵 조금씩 변화하는 것도 큰 발전이에요!\n계속 연습해보세요.", Toast.LENGTH_LONG).show()
+        }
+        builder.setNegativeButton("아직 잘 모르겠어요 😐") { _, _ ->
+            Toast.makeText(this, "🤗 괜찮습니다! 변화는 천천히 나타날 수 있어요.\n시간을 두고 지켜봐주세요.", Toast.LENGTH_LONG).show()
+        }
+        builder.setCancelable(false)
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark))
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
     }
 
     private fun proceedToNextStep() {
@@ -459,13 +896,15 @@ class EmotionTunerActivity : AppCompatActivity() {
         tvTuningStatus.text = "🎵 조율이 완료되었습니다!"
         progressBarTuning.progress = progressBarTuning.max
 
-        // 수업 7주차 Toast 활용 - 성공 메시지
-        Toast.makeText(this,
-            "🎊 ${currentEmotionName}(${intensityLevels[currentIntensity-1]})에서 ${targetEmotionName}(${intensityLevels[seekBarTarget.progress]})으로 조율 완료!\n\n기분이 어떠신가요?",
-            Toast.LENGTH_LONG).show()
+        // 성공 메시지 - 선택된 치료법에 따라 다르게
+        val completionMessage = when(selectedTherapyMethod) {
+            "DBT" -> "🎚️ 볼륨 조절법 완료!\n${currentEmotionName}(${intensityLevels[currentIntensity-1]})에서 ${targetEmotionName}(${intensityLevels[seekBarTarget.progress]})으로 조율 완료!"
+            "CBT" -> "🎼 조성 바꾸기 완료!\n새로운 관점으로 상황을 바라볼 수 있게 되었어요!"
+            "ACT" -> "🌊 자연스러운 전조 완료!\n감정과 평화롭게 공존하는 법을 연습했어요!"
+            else -> "🎵 기본 조율 완료!\n${currentEmotionName}에서 ${targetEmotionName}으로 조율 완료!"
+        }
 
-        // 조율 결과 저장 제안
-        showSaveResultDialog()
+        Toast.makeText(this, completionMessage, Toast.LENGTH_LONG).show()
     }
 
     private fun stopTuning() {
@@ -495,19 +934,34 @@ class EmotionTunerActivity : AppCompatActivity() {
     }
 
     private fun generateActivityGuide() {
-        // 기존 코드와 동일하지만 더 구체적으로
-        val guide = when {
-            currentEmotionSymbol == "♯" && targetEmotionSymbol == "♩" -> {
-                "🔥➜🌊 화남을 평온으로 조절하기\n\n단계별로 차근차근 진행하면 화를 평온하게 가라앉힐 수 있어요.\n\n예상 소요시간: 5-10분"
+        // 치료법별로 다른 가이드 생성
+        val guide = when(selectedTherapyMethod) {
+            "DBT" -> when {
+                currentEmotionSymbol == "♯" && targetEmotionSymbol == "♩" -> {
+                    "🎚️ DBT 볼륨 조절법 - 화남→평온\n\n감정의 강도를 물리적으로 낮춰서 평온함에 도달합니다.\nTIP 기법과 반대 행동을 통해 볼륨을 조절해요.\n\n예상 소요시간: 5-8분"
+                }
+                else -> {
+                    "🎚️ DBT 볼륨 조절법\n\n감정의 강도를 효과적으로 조절하여 원하는 수준에 도달합니다.\n강한 감정을 다루는 데 특히 효과적이에요.\n\n예상 소요시간: 3-6분"
+                }
             }
-            currentEmotionSymbol == "♭" && targetEmotionSymbol == "♪" -> {
-                "😢➜😊 슬픔을 기쁨으로 바꾸기\n\n작은 감사함부터 시작해서 조금씩 기쁨을 찾아보겠습니다.\n\n예상 소요시간: 5-8분"
+            "CBT" -> when {
+                currentEmotionSymbol == "♯" && targetEmotionSymbol == "♩" -> {
+                    "🎼 CBT 조성 바꾸기 - 화남→평온\n\n화가 나게 하는 생각을 다른 관점으로 바꿔서 마음을 평온하게 만듭니다.\n단조에서 장조로 조성을 바꾸듯이요.\n\n예상 소요시간: 6-10분"
+                }
+                else -> {
+                    "🎼 CBT 조성 바꾸기\n\n상황을 바라보는 관점을 바꿔서 감정의 색깔을 변화시킵니다.\n생각이 감정을 만든다는 원리를 활용해요.\n\n예상 소요시간: 4-8분"
+                }
             }
-            currentEmotionSymbol == "𝄢" && targetEmotionSymbol == "♩" -> {
-                "😰➜😌 불안을 평온으로 진정시키기\n\n현재 순간에 집중하며 안전감을 되찾아보겠습니다.\n\n예상 소요시간: 8-12분"
+            "ACT" -> when {
+                currentEmotionSymbol == "♯" && targetEmotionSymbol == "♩" -> {
+                    "🌊 ACT 자연스러운 전조 - 화남→평온\n\n화남을 억지로 바꾸려 하지 않고 자연스럽게 흘러가도록 도와드립니다.\n감정 파도를 관찰하며 가치 기반 행동을 연습해요.\n\n예상 소요시간: 6-12분"
+                }
+                else -> {
+                    "🌊 ACT 자연스러운 전조\n\n감정을 바꾸려 하지 않고 수용하면서 자연스러운 변화를 경험합니다.\n감정과 평화롭게 공존하는 법을 배워요.\n\n예상 소요시간: 5-10분"
+                }
             }
             else -> {
-                "✨ ${currentEmotionName}에서 ${targetEmotionName}으로\n\n단계적으로 감정 상태를 조율해보겠습니다.\n\n예상 소요시간: 3-5분"
+                "🎶 기본 조율법 - ${currentEmotionName}→${targetEmotionName}\n\n단계적으로 감정 상태를 조율해보겠습니다.\n누구나 쉽게 따라할 수 있는 방법이에요.\n\n예상 소요시간: 3-5분"
             }
         }
 
@@ -536,101 +990,6 @@ class EmotionTunerActivity : AppCompatActivity() {
             Toast.makeText(this, "목표 감정이 ${targetEmotionName}으로 설정되었습니다", Toast.LENGTH_SHORT).show()
         }
         builder.show()
-    }
-
-    private fun showActivitySelectionDialog() {
-        // 추가 조절 활동 선택
-        val activities = arrayOf(
-            "🧘‍♀️ 3분 명상",
-            "🎵 음악 감상",
-            "🚶‍♀️ 가벼운 산책",
-            "💨 호흡 운동",
-            "✍️ 감정 일기",
-            "🎨 간단한 그리기"
-        )
-
-        val builder = android.app.AlertDialog.Builder(this)
-        builder.setTitle("🎭 추가 조절 활동")
-        builder.setItems(activities) { _, which ->
-            val selectedActivity = activities[which]
-            Toast.makeText(this, "${selectedActivity}을(를) 시작해보세요!", Toast.LENGTH_SHORT).show()
-
-            // 실제로는 각 활동별 상세 가이드나 타이머 실행
-            when(which) {
-                0 -> startMeditationTimer()
-                1 -> suggestMusic()
-                2 -> suggestWalk()
-                3 -> startBreathingExercise()
-                4 -> openEmotionDiary()
-                5 -> openDrawingActivity()
-            }
-        }
-        builder.show()
-    }
-
-    private fun showSaveResultDialog() {
-        val builder = android.app.AlertDialog.Builder(this)
-        builder.setTitle("📝 조율 결과 저장")
-        builder.setMessage("이번 감정 조율 경험을 기록하시겠어요?\n나중에 비슷한 상황에서 도움이 될 수 있어요.")
-        builder.setPositiveButton("저장하기") { _, _ ->
-            saveTuningResult()
-        }
-        builder.setNegativeButton("건너뛰기", null)
-        builder.show()
-    }
-
-    private fun saveTuningResult() {
-        // 수업 9주차 파일 처리 활용 - 조율 결과 저장
-        try {
-            val fileName = "tuning_history.txt"
-            val content = buildString {
-                append("날짜: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(java.util.Date())}\n")
-                append("시작 감정: $currentEmotionSymbol $currentEmotionName (${intensityLevels[currentIntensity-1]})\n")
-                append("목표 감정: $targetEmotionSymbol $targetEmotionName (${intensityLevels[seekBarTarget.progress]})\n")
-                append("조율 단계: ${tuningSteps.size}단계 완료\n")
-                append("완료 여부: 성공\n")
-                append("---\n")
-            }
-
-            val fileOutput = openFileOutput(fileName, android.content.Context.MODE_APPEND)
-            fileOutput.write(content.toByteArray())
-            fileOutput.close()
-
-            Toast.makeText(this, "✅ 조율 결과가 저장되었습니다!", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "저장 중 오류가 발생했습니다", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // 각 활동별 구현 (간단한 예시)
-    private fun startMeditationTimer() {
-        Toast.makeText(this, "🧘‍♀️ 3분 명상을 시작합니다. 편안히 앉아서 호흡에 집중해보세요.", Toast.LENGTH_LONG).show()
-    }
-
-    private fun suggestMusic() {
-        val musicSuggestion = when(targetEmotionSymbol) {
-            "♩" -> "차분한 클래식이나 자연 소리를 들어보세요 🎼"
-            "♪" -> "밝고 경쾌한 팝송이나 재즈를 들어보세요 🎵"
-            "♡" -> "따뜻한 발라드나 로맨틱한 음악을 들어보세요 💕"
-            else -> "좋아하는 음악을 들으며 마음을 다스려보세요 🎶"
-        }
-        Toast.makeText(this, musicSuggestion, Toast.LENGTH_LONG).show()
-    }
-
-    private fun suggestWalk() {
-        Toast.makeText(this, "🚶‍♀️ 10분 정도 천천히 걸으며 주변을 관찰해보세요. 신선한 공기를 마셔보세요!", Toast.LENGTH_LONG).show()
-    }
-
-    private fun startBreathingExercise() {
-        Toast.makeText(this, "💨 4초 들이쉬고, 7초 참고, 8초 내쉬는 호흡을 5회 반복해보세요.", Toast.LENGTH_LONG).show()
-    }
-
-    private fun openEmotionDiary() {
-        Toast.makeText(this, "✍️ 지금 느끼는 감정을 자유롭게 글로 표현해보세요.", Toast.LENGTH_LONG).show()
-    }
-
-    private fun openDrawingActivity() {
-        Toast.makeText(this, "🎨 현재 기분을 색깔과 모양으로 그려보세요. 정답은 없어요!", Toast.LENGTH_LONG).show()
     }
 
     private fun getEmotionColor(symbol: String): Int {

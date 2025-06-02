@@ -115,6 +115,101 @@
 
         </LinearLayout>
 
+        <!-- 치료법 선택 섹션 (목표 감정 섹션 뒤에 추가) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎼 조율 방식 선택"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_background"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="어떤 방식으로 감정을 조율하시겠어요?"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="16dp" />
+
+            <RadioGroup
+                android:id="@+id/rgTherapyMethod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <RadioButton
+                    android:id="@+id/rbDBT"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🎚️ DBT 볼륨 조절법 - 감정 강도 다루기"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@drawable/radio_button_bg"
+                    android:layout_marginBottom="8dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+
+                <RadioButton
+                    android:id="@+id/rbCBT"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🎼 CBT 조성 바꾸기 - 생각의 관점 전환"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@drawable/radio_button_bg"
+                    android:layout_marginBottom="8dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+
+                <RadioButton
+                    android:id="@+id/rbACT"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🎵 ACT 자연스러운 전조 - 감정 흐름 수용"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@drawable/radio_button_bg"
+                    android:layout_marginBottom="8dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+
+                <RadioButton
+                    android:id="@+id/rbDefault"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🎶 기본 조율법 - 간단하고 편안하게"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@drawable/radio_button_bg"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:checked="true" />
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/tvTherapyDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="💡 기본 조율법: 누구나 쉽게 따라할 수 있는 단계별 감정 조율 방법입니다."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/edittext_bg"
+                android:padding="12dp"
+                android:lineSpacingExtra="2dp" />
+
+        </LinearLayout>
+
         <!-- 화살표 -->
         <TextView
             android:layout_width="match_parent"
@@ -267,16 +362,6 @@
                 android:textColor="@color/text_primary"
                 android:lineSpacingExtra="4dp" />
 
-            <Button
-                android:id="@+id/btnSelectActivity"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="🎭 다른 활동 선택"
-                android:textSize="12sp"
-                android:textColor="@color/text_primary"
-                android:background="@drawable/chord_button_bg"
-                android:layout_marginTop="12dp"
-                android:layout_gravity="end" />
 
         </LinearLayout>
 
