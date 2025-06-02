@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,7 +40,6 @@
 
         </LinearLayout>
 
-        <!-- 현재 감정 섹션 (자연스럽게 표시) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -63,8 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/tvCurrentEmotionIcon"
@@ -94,7 +91,7 @@
                         android:id="@+id/tvCurrentIntensity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="f (세게)"
+                        android:text="균형 필요"
                         android:textSize="14sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginTop="4dp" />
@@ -105,11 +102,10 @@
 
         </LinearLayout>
 
-        <!-- 치료법 선택 섹션 (목표 감정 섹션 뒤에 추가) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🎼 조율 방식 선택"
+            android:text="🎯 맞춤 조율 계획"
             android:textSize="18sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
@@ -122,240 +118,39 @@
             android:orientation="vertical"
             android:padding="20dp"
             android:layout_marginBottom="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="어떤 방식으로 감정을 조율하시겠어요?"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="16dp" />
-
-            <RadioGroup
-                android:id="@+id/rgTherapyMethod"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
-
-                <RadioButton
-                    android:id="@+id/rbDBT"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="🎚️ DBT 볼륨 조절법 - 감정 강도 다루기"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/radio_button_bg"
-                    android:layout_marginBottom="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp" />
-
-                <RadioButton
-                    android:id="@+id/rbCBT"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="🎼 CBT 조성 바꾸기 - 생각의 관점 전환"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/radio_button_bg"
-                    android:layout_marginBottom="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp" />
-
-                <RadioButton
-                    android:id="@+id/rbACT"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="🎵 ACT 자연스러운 전조 - 감정 흐름 수용"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/radio_button_bg"
-                    android:layout_marginBottom="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp" />
-
-                <RadioButton
-                    android:id="@+id/rbDefault"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="🎶 기본 조율법 - 간단하고 편안하게"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/radio_button_bg"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:checked="true" />
-
-            </RadioGroup>
 
             <TextView
                 android:id="@+id/tvTherapyDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="💡 기본 조율법: 누구나 쉽게 따라할 수 있는 단계별 감정 조율 방법입니다."
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:background="@drawable/edittext_bg"
-                android:padding="12dp"
-                android:lineSpacingExtra="2dp" />
-
-        </LinearLayout>
-
-        <!-- 화살표 -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="⬇️ 조율하기 ⬇️"
-            android:textSize="16sp"
-            android:textColor="@color/secondary_orange"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
-
-        <!-- 목표 감정 섹션 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🎯 목표 감정"
-            android:textSize="18sp"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/card_background"
-            android:orientation="vertical"
-            android:padding="20dp"
-            android:layout_marginBottom="24dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:id="@+id/tvTargetEmotionIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="♩"
-                    android:textSize="32sp"
-                    android:textColor="@color/primary_purple"
-                    android:layout_marginEnd="16dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="8dp" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvTargetEmotion"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="평온"
-                        android:textSize="20sp"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvTargetIntensity"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="mf (보통으로)"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginTop="4dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="👆 변경"
-                    android:textSize="12sp"
-                    android:textColor="@color/secondary_orange" />
-
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="목표 강도 설정"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="8dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="pp"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginEnd="8dp" />
-
-                <SeekBar
-                    android:id="@+id/seekBarTarget"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:max="4"
-                    android:progress="2"
-                    android:progressTint="@color/primary_purple"
-                    android:thumbTint="@color/primary_purple" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ff"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginStart="8dp" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 조율 가이드 섹션 -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📋 조율 가이드"
-            android:textSize="18sp"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/emotion_timeline_bg"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:layout_marginBottom="24dp">
+                android:text="⚖️ 균형 조율"
+                android:textSize="18sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
 
             <TextView
                 android:id="@+id/tvActivityGuide"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🔥➜🌊 화남을 평온으로 조절하기\n\n단계별로 차근차근 진행하면 화를 평온하게 가라앉힐 수 있어요.\n\n예상 소요시간: 5-10분"
+                android:text="과도한 흥분을 지속 가능한 만족감으로 조절해보겠습니다.\n기쁨을 잃지 않으면서도 현실감각을 유지해보세요.\n\n예상 소요시간: 4-6분"
                 android:textSize="14sp"
                 android:textColor="@color/text_primary"
-                android:lineSpacingExtra="4dp" />
-
+                android:lineSpacingExtra="4dp"
+                android:background="@drawable/edittext_bg"
+                android:padding="16dp" />
 
         </LinearLayout>
 
-        <!-- 조율 진행 섹션 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📊 조율 진행"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
         <LinearLayout
             android:id="@+id/linearTuningProgress"
             android:layout_width="match_parent"
@@ -363,60 +158,55 @@
             android:background="@drawable/card_background"
             android:orientation="vertical"
             android:padding="20dp"
-            android:layout_marginBottom="24dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎼 조율 진행 상황"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="32dp">
 
             <ProgressBar
                 android:id="@+id/progressBarTuning"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
-                android:max="5"
+                android:max="3"
                 android:progress="0"
                 android:progressTint="@color/primary_pink"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="16dp" />
 
             <TextView
                 android:id="@+id/tvTuningStatus"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🎼 조율 준비 중..."
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:gravity="center" />
+                android:layout_height="80dp"
+                android:text="⚖️ 조율 준비 완료. 시작하시겠어요?"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/emotion_timeline_bg"
+                android:padding="16dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp" />
 
         </LinearLayout>
 
-        <!-- 여기에 동적으로 단계별 UI가 추가됩니다 -->
-
-        <!-- 조율 시작 버튼 -->
         <Button
             android:id="@+id/btnStartTuning"
             style="@style/GradientButton"
-            android:text="🎼 단계별 조율 시작"
-            android:textSize="18sp"
-            android:layout_marginTop="16dp" />
+            android:text="⚖️ 조율 시작하기"
+            android:textSize="18sp" />
 
-        <!-- 감성적인 도움말 -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💫 감정 조율은 마음의 선율을 다시 맞추는 시간입니다. 급하지 않게, 자신만의 속도로 천천히 진행해보세요. 작은 변화도 소중한 성장입니다."
+            android:text="💫 각 감정에 맞는 전문적인 조율 방법으로 마음의 균형을 찾아보세요. 천천히, 자신만의 속도로 진행하시면 됩니다."
             android:textSize="12sp"
             android:textColor="@color/text_secondary"
             android:background="@drawable/edittext_bg"
             android:padding="12dp"
             android:layout_marginTop="16dp"
             android:lineSpacingExtra="2dp" />
+
+        <LinearLayout
+            android:id="@+id/rgTherapyMethod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
 
     </LinearLayout>
 
