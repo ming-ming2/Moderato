@@ -103,16 +103,6 @@
 
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="💡 조율을 통해 목표 감정으로 이끌어보세요."
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:background="@drawable/edittext_bg"
-                android:padding="12dp"
-                android:lineSpacingExtra="2dp" />
-
         </LinearLayout>
 
         <!-- 치료법 선택 섹션 (목표 감정 섹션 뒤에 추가) -->
