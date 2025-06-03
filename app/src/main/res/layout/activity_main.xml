@@ -83,7 +83,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎵 Today's Emotion Chord"
+                android:text="🎵 오늘의 감정 하모니"
                 android:textSize="20sp"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
