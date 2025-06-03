@@ -185,26 +185,14 @@
                     android:gravity="center">
 
                     <Button
-                        android:id="@+id/btnPlayChord"
-                        android:layout_width="0dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:text="♪ 코드 듣기"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:background="@drawable/chord_button_bg"
-                        android:layout_marginEnd="8dp" />
-
-                    <Button
                         android:id="@+id/btnShareChord"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:layout_weight="1"
                         android:text="📤 공유하기"
                         android:textSize="14sp"
                         android:textColor="@color/text_primary"
                         android:background="@drawable/chord_button_bg"
-                        android:layout_marginStart="8dp" />
+                        />
 
                 </LinearLayout>
 

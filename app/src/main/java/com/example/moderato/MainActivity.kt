@@ -29,7 +29,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvChordMessage: TextView
     private lateinit var tvEmotionCount: TextView
     private lateinit var tvDominantEmotion: TextView
-    private lateinit var btnPlayChord: Button
     private lateinit var btnShareChord: Button
 
     private lateinit var btnEmotionArchive: Button
@@ -87,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         tvChordMessage = findViewById(R.id.tvChordMessage)
         tvEmotionCount = findViewById(R.id.tvEmotionCount)
         tvDominantEmotion = findViewById(R.id.tvDominantEmotion)
-        btnPlayChord = findViewById(R.id.btnPlayChord)
         btnShareChord = findViewById(R.id.btnShareChord)
     }
 
@@ -114,10 +112,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChordClickListeners() {
-        btnPlayChord.setOnClickListener {
-            handlePlayChord()
-        }
-
         btnShareChord.setOnClickListener {
             handleShareChord()
         }
@@ -222,11 +216,10 @@ class MainActivity : AppCompatActivity() {
             tvChordName.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
         }
 
+        // 공유 버튼 표시 여부만 결정 (코드 듣기 버튼 제거됨)
         if (chord.emotionCount == 0) {
-            btnPlayChord.text = "🎵 첫 감정 기록하기"
             btnShareChord.visibility = View.GONE
         } else {
-            btnPlayChord.text = "♪ 코드 듣기"
             btnShareChord.visibility = View.VISIBLE
         }
 
@@ -244,22 +237,6 @@ class MainActivity : AppCompatActivity() {
             .scaleY(1f)
             .setDuration(500)
             .start()
-    }
-
-    private fun handlePlayChord() {
-        val currentChord = chordAnalyzer.analyzeEmotions(emotionData)
-
-        if (currentChord.emotionCount == 0) {
-            val intent = Intent(this, EmotionInputActivity::class.java)
-            startActivityForResult(intent, EMOTION_INPUT_REQUEST)
-        } else {
-            showChordPlayMessage(currentChord)
-        }
-    }
-
-    private fun showChordPlayMessage(chord: EmotionChordAnalyzer.EmotionChord) {
-        val message = "${chord.chordName} 코드가 연주됩니다 🎵\n${chord.message}"
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun handleShareChord() {
@@ -375,7 +352,10 @@ class MainActivity : AppCompatActivity() {
         val emotionContainer = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
                 setMargins(0, 4, 0, 0)
             }
         }
@@ -384,7 +364,10 @@ class MainActivity : AppCompatActivity() {
             text = emotion.emotionSymbol
             textSize = 20f
             setTextColor(getEmotionColor(emotion.emotionSymbol))
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
                 setMargins(0, 0, 8, 0)
             }
         }
