@@ -61,6 +61,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+
+        <!-- 기간별 상세 화면 -->
+        <activity
+            android:name=".PeriodDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".EmotionArchiveActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".EmotionArchiveActivity" />
+        </activity>
     </application>
 
 </manifest>

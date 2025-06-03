@@ -283,10 +283,10 @@ class EmotionArchiveActivity : AppCompatActivity() {
 
     private fun getCurrentWeekPeriod(): String {
         val calendar = Calendar.getInstance()
-        val monthName = SimpleDateFormat("MMMM", Locale.ENGLISH).format(calendar.time)
+        val month = calendar.get(Calendar.MONTH) + 1
         val weekOfMonth = calendar.get(Calendar.WEEK_OF_MONTH)
         val year = calendar.get(Calendar.YEAR)
-        return "$monthName Week $weekOfMonth, $year"
+        return "${year}년 ${month}월 ${weekOfMonth}주차"
     }
 
     private fun getStartOfWeek(calendar: Calendar): Calendar {
@@ -456,23 +456,27 @@ class EmotionArchiveActivity : AppCompatActivity() {
     }
 
     private fun openWeeklyDetail(weekPeriod: String) {
-        Toast.makeText(this, "주간 상세: $weekPeriod", Toast.LENGTH_SHORT).show()
-        // TODO: WeeklyDetailActivity 구현 예정
+        val intent = Intent(this, PeriodDetailActivity::class.java)
+        intent.putExtra(PeriodDetailActivity.EXTRA_PERIOD_TYPE, "WEEKLY")
+        intent.putExtra(PeriodDetailActivity.EXTRA_PERIOD_DATA, weekPeriod)
+        startActivity(intent)
     }
 
     private fun openMonthlyDetail(monthPeriod: String) {
-        Toast.makeText(this, "월간 상세: $monthPeriod", Toast.LENGTH_SHORT).show()
-        // TODO: MonthlyDetailActivity 구현 예정
+        val intent = Intent(this, PeriodDetailActivity::class.java)
+        intent.putExtra(PeriodDetailActivity.EXTRA_PERIOD_TYPE, "MONTHLY")
+        intent.putExtra(PeriodDetailActivity.EXTRA_PERIOD_DATA, monthPeriod)
+        startActivity(intent)
     }
 
     private fun openWeeklyArchive() {
-        Toast.makeText(this, "주간 아카이브 목록", Toast.LENGTH_SHORT).show()
-        // TODO: WeeklyArchiveListActivity 구현 예정
+        Toast.makeText(this, "주간 아카이브 목록을 불러오는 중...", Toast.LENGTH_SHORT).show()
+        // TODO: 주간 아카이브 목록 화면 구현 예정
     }
 
     private fun openMonthlyArchive() {
-        Toast.makeText(this, "월간 아카이브 목록", Toast.LENGTH_SHORT).show()
-        // TODO: MonthlyArchiveListActivity 구현 예정
+        Toast.makeText(this, "월간 아카이브 목록을 불러오는 중...", Toast.LENGTH_SHORT).show()
+        // TODO: 월간 아카이브 목록 화면 구현 예정
     }
 
     // 데이터 클래스들

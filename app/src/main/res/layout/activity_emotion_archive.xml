@@ -41,11 +41,11 @@
 
         </LinearLayout>
 
-        <!-- Popular Now 섹션 -->
+        <!-- 이번 주 하이라이트 섹션 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="✨ Popular Now"
+            android:text="✨ 이번 주 하이라이트"
             android:textSize="20sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
@@ -58,8 +58,8 @@
             android:layout_height="wrap_content"
             android:background="@drawable/modern_card_bg"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:layout_marginBottom="16dp"
+            android:padding="24dp"
+            android:layout_marginBottom="20dp"
             android:elevation="8dp">
 
             <LinearLayout
@@ -67,14 +67,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🔥"
-                    android:textSize="24sp"
-                    android:layout_marginEnd="12dp" />
+                    android:textSize="28sp"
+                    android:layout_marginEnd="16dp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -85,8 +85,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="This Week's Harmony"
-                        android:textSize="18sp"
+                        android:text="이번 주의 감정 하모니"
+                        android:textSize="20sp"
                         android:textColor="@color/text_primary"
                         android:textStyle="bold" />
 
@@ -94,10 +94,10 @@
                         android:id="@+id/tvWeeklyPeriod"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="June Week 3, 2025"
-                        android:textSize="14sp"
+                        android:text="2025년 6월 3주차"
+                        android:textSize="15sp"
                         android:textColor="@color/text_secondary"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginTop="6dp" />
 
                 </LinearLayout>
 
@@ -106,11 +106,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="⭐ 4.8"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textColor="@color/secondary_orange"
                     android:textStyle="bold"
                     android:background="@drawable/score_badge_bg"
-                    android:padding="8dp" />
+                    android:padding="10dp" />
 
             </LinearLayout>
 
@@ -119,24 +119,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Cmaj7 - 밝고 안정적인 한 주"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textColor="@color/primary_pink"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="16dp" />
 
-            <!-- 주간 미니 악보 컨테이너 -->
+            <!-- 주간 미니 악보 컨테이너 (더 크게!) -->
             <LinearLayout
                 android:id="@+id/weeklyStaffContainer"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
+                android:layout_height="180dp"
                 android:background="@drawable/mini_staff_bg"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎼 미니 악보 영역"
+                    android:text="🎼 이번 주 감정 악보"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
@@ -146,7 +147,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📅 Time Archive"
+            android:text="📅 시간별 아카이브"
             android:textSize="20sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
@@ -165,8 +166,8 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
-                android:text="📅 Weekly"
-                android:textSize="14sp"
+                android:text="📅 주간 기록"
+                android:textSize="15sp"
                 android:textColor="@color/text_primary"
                 android:background="@drawable/category_button_bg"
                 android:layout_marginEnd="8dp" />
@@ -176,8 +177,8 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
-                android:text="🌙 Monthly"
-                android:textSize="14sp"
+                android:text="🌙 월간 기록"
+                android:textSize="15sp"
                 android:textColor="@color/text_primary"
                 android:background="@drawable/category_button_bg"
                 android:layout_marginStart="8dp" />
@@ -188,7 +189,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📚 Recent Archives"
+            android:text="📚 최근 감정 아카이브"
             android:textSize="18sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
