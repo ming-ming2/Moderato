@@ -10,38 +10,15 @@
         android:orientation="vertical">
 
         <!-- Header -->
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="♪ Moderato"
-                android:textSize="24sp"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <ImageButton
-                android:id="@+id/btnNotification"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_notification"
-                android:layout_marginEnd="8dp" />
-
-            <ImageButton
-                android:id="@+id/btnSettings"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_settings" />
-
-        </LinearLayout>
+            android:text="♪ Moderato"
+            android:textSize="24sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="20dp" />
 
         <!-- 1. 감정 선율 (맨 위로) -->
         <LinearLayout
@@ -285,35 +262,53 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_margin="16dp"
-            android:gravity="center">
+            android:orientation="vertical"
+            android:layout_margin="16dp">
 
-            <!-- 감정 기록하기 버튼 -->
+            <!-- 첫 번째 줄: 감정 기록 + 조율 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnAddEmotion"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="+ 감정 기록하기"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:background="@drawable/gradient_button_bg"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnEmotionTuner"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="🎚️ 감정 조율"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:background="@drawable/tuner_button_bg"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
+            <!-- 두 번째 줄: 감정 악보집 -->
             <Button
-                android:id="@+id/btnAddEmotion"
-                android:layout_width="0dp"
+                android:id="@+id/btnEmotionArchive"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="+ 감정 기록하기"
-                android:textSize="16sp"
+                android:text="📚 감정 악보집"
+                android:textSize="18sp"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
-                android:background="@drawable/gradient_button_bg"
-                android:layout_marginEnd="8dp" />
-
-            <!-- 감정 조율사 버튼 -->
-            <Button
-                android:id="@+id/btnEmotionTuner"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="🎚️ 감정 조율"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:background="@drawable/tuner_button_bg"
-                android:layout_marginStart="8dp" />
+                android:background="@drawable/archive_button_bg" />
 
         </LinearLayout>
 

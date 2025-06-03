@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
@@ -314,15 +315,20 @@ class EmotionTunerActivity : AppCompatActivity() {
     }
 
     // 수업 7주차 - 대화상자 활용
+// 수업 7주차 - 대화상자 활용
     private fun showExitConfirmDialog() {
-        val builder = android.app.AlertDialog.Builder(this)
+        val builder = android.app.AlertDialog.Builder(this, R.style.DarkDialogTheme)
         builder.setTitle("🤔 조율 중단")
         builder.setMessage("조율을 중단하고 나가시겠어요?\n현재 진행상황이 저장되지 않습니다.")
         builder.setPositiveButton("나가기") { _, _ -> finish() }
         builder.setNegativeButton("계속하기", null)
-        builder.show()
-    }
+        val dialog = builder.show()
 
+        // 추가 텍스트 및 버튼 색상 보정
+        dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_light))
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.primary_pink))
+    }
     // 수업 4주차 - 위젯 색상 설정
     private fun getEmotionColor(symbol: String): Int {
         return when(symbol) {

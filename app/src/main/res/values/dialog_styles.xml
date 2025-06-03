@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 다크 테마 대화상자 스타일 -->
+    <style name="DarkDialogTheme" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@drawable/dialog_background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="colorAccent">@color/primary_pink</item>
+        <item name="android:buttonBarButtonStyle">@style/DarkDialogButton</item>
+    </style>
+
+    <!-- 다크 테마 대화상자 버튼 스타일 -->
+    <style name="DarkDialogButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/primary_pink</item>
+        <item name="android:background">@drawable/dialog_button_bg</item>
+    </style>
+</resources>
