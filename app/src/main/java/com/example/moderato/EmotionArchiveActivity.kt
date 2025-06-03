@@ -469,14 +469,16 @@ class EmotionArchiveActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    // EmotionArchiveActivity.kt의 TODO 부분을 다음으로 교체
+
     private fun openWeeklyArchive() {
-        Toast.makeText(this, "주간 아카이브 목록을 불러오는 중...", Toast.LENGTH_SHORT).show()
-        // TODO: 주간 아카이브 목록 화면 구현 예정
+        val intent = Intent(this, WeeklyArchiveActivity::class.java)
+        startActivity(intent)
     }
 
     private fun openMonthlyArchive() {
-        Toast.makeText(this, "월간 아카이브 목록을 불러오는 중...", Toast.LENGTH_SHORT).show()
-        // TODO: 월간 아카이브 목록 화면 구현 예정
+        val intent = Intent(this, MonthlyArchiveActivity::class.java)
+        startActivity(intent)
     }
 
     // 데이터 클래스들

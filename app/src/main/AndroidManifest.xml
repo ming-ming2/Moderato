@@ -72,6 +72,30 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".EmotionArchiveActivity" />
         </activity>
+
+        <!-- AndroidManifest.xml의 </application> 태그 전에 추가 -->
+
+        <!-- 주간 아카이브 화면 -->
+        <activity
+            android:name=".WeeklyArchiveActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".EmotionArchiveActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".EmotionArchiveActivity" />
+        </activity>
+
+        <!-- 월간 아카이브 화면 -->
+        <activity
+            android:name=".MonthlyArchiveActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".EmotionArchiveActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".EmotionArchiveActivity" />
+        </activity>
     </application>
 
 </manifest>

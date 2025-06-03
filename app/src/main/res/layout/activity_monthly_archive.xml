@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- app/src/main/res/layout/activity_monthly_archive.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🌙 월간 감정 선율"
+                android:textSize="24sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="48dp"
+                android:layout_height="48dp" />
+
+        </LinearLayout>
+
+        <!-- 월간 네비게이션 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/modern_card_bg"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/btnPrevMonth"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/chord_button_bg"
+                android:src="@drawable/ic_back"
+                android:rotation="0" />
+
+            <TextView
+                android:id="@+id/tvCurrentMonth"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2025년 6월의 선율"
+                android:textSize="20sp"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <ImageButton
+                android:id="@+id/btnNextMonth"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/chord_button_bg"
+                android:src="@drawable/ic_back"
+                android:rotation="180" />
+
+        </LinearLayout>
+
+        <!-- 월간 아카이브 컨테이너 -->
+        <LinearLayout
+            android:id="@+id/monthlyArchiveContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 동적으로 추가될 예정 -->
+
+        </LinearLayout>
+
+        <!-- 빈 상태 메시지 -->
+        <TextView
+            android:id="@+id/tvEmptyMonthly"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:text="이번 달은 아직 기록된 감정이 없어요.\n감정을 기록하고 나만의 월간 선율을 만들어보세요! 🎵"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:lineSpacingExtra="6dp"
+            android:background="@drawable/card_background"
+            android:padding="20dp" />
+
+        <!-- 하단 안내 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎼 주차별 카드를 클릭하면 해당 주의 상세 분석을 볼 수 있어요\n🌟 월간 하이라이트에서 이달의 특별한 순간들을 확인해보세요"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:background="@drawable/edittext_bg"
+            android:padding="12dp"
+            android:layout_marginTop="20dp"
+            android:lineSpacingExtra="2dp"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+</ScrollView>
