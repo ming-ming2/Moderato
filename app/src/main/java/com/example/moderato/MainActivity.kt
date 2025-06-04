@@ -36,6 +36,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fileManager: EmotionFileManager
     private lateinit var chordAnalyzer: EmotionChordAnalyzer
     private lateinit var chordHistoryManager: ChordHistoryManager
+
+    // 새로운 DBT 기반 분석기들
+    private lateinit var emotionAnalyzer: EmotionPatternAnalyzer
+    private lateinit var therapyRecommender: DBTTherapyRecommender
+
     private val emotionData = mutableListOf<EmotionRecord>()
 
     companion object {
@@ -46,9 +51,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // 기존 초기화
         fileManager = EmotionFileManager(this)
         chordAnalyzer = EmotionChordAnalyzer()
         chordHistoryManager = ChordHistoryManager(this)
+
+        // 새로운 DBT 분석기들 초기화
+        emotionAnalyzer = EmotionPatternAnalyzer()
+        therapyRecommender = DBTTherapyRecommender()
 
         initViews()
         initChordViews()
@@ -121,6 +131,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 🎵 업데이트된 감정 조율 시작 메소드
+     * 기존: 가장 최근 감정만 → 새로운: 오늘의 모든 감정 종합 분석 + DBT 기반 조율
+     */
     private fun startEmotionTuner() {
         if (emotionData.isEmpty()) {
             Toast.makeText(this, "먼저 현재 감정을 기록해주세요!", Toast.LENGTH_SHORT).show()
@@ -129,14 +143,145 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // 🎵 새로운 로직: 복합 감정 분석
+        try {
+            // 1. 오늘의 모든 감정 패턴 분석
+            val emotionAnalysis = emotionAnalyzer.analyzeEmotions(emotionData)
+
+            // 2. DBT 기반 조율 방법 추천
+            val therapyPlan = therapyRecommender.recommendTherapy(emotionAnalysis)
+
+            // 3. 분석 결과를 사용자에게 미리 보여주기 (수업 7주차 - 대화상자)
+            showTherapyPreview(emotionAnalysis, therapyPlan)
+
+        } catch (e: Exception) {
+            // 오류 발생 시 기본 조율로 대체
+            Toast.makeText(this, "분석 중 오류가 발생했습니다. 기본 조율을 시작합니다.", Toast.LENGTH_SHORT).show()
+            startBasicTuner()
+        }
+    }
+
+    /**
+     * 조율 방법 미리보기 다이얼로그 (수업 7주차 - 대화상자)
+     */
+    private fun showTherapyPreview(
+        analysis: EmotionPatternAnalyzer.EmotionAnalysis,
+        therapyPlan: DBTTherapyRecommender.TherapyPlan
+    ) {
+        val message = buildString {
+            append("🎼 오늘의 감정 분석 결과\n\n")
+
+            // 감정 패턴 설명
+            append("📊 감정 패턴: ${getPatternDescription(analysis.pattern)}\n")
+            append("🎭 감정 성향: ${getPolarityDescription(analysis.polarity)}\n")
+            append("🎚️ 평균 강도: ${getIntensityDescription(analysis.intensity)}\n")
+            append("🎵 주요 감정: ${emotionAnalyzer.getEmotionNameFromSymbol(analysis.dominantEmotion)}\n")
+            append("📈 변동성: ${"%.1f".format(analysis.variabilityScore)}\n\n")
+
+            // 추천 조율법
+            append("💡 추천 조율법:\n")
+            append("${therapyPlan.title}\n\n")
+            append("${therapyPlan.description}\n\n")
+            append("⏱️ 예상 소요시간: ${therapyPlan.estimatedTime}")
+        }
+
+        val builder = AlertDialog.Builder(this, R.style.DarkDialogTheme)
+        builder.setTitle("🎧 감정 조율 분석")
+        builder.setMessage(message)
+        builder.setPositiveButton("🎵 조율 시작하기") { _, _ ->
+            // EmotionTunerActivity로 분석 결과와 조율 계획 전달
+            startAdvancedTuner(analysis, therapyPlan)
+        }
+        builder.setNegativeButton("다시 분석") { _, _ ->
+            // 감정을 추가 기록하고 다시 분석
+            val intent = Intent(this, EmotionInputActivity::class.java)
+            startActivityForResult(intent, EMOTION_INPUT_REQUEST)
+        }
+        builder.setNeutralButton("취소", null)
+
+        val dialog = builder.show()
+
+        // 다이얼로그 스타일링 (수업 7주차)
+        dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(
+            ContextCompat.getColor(this, R.color.text_primary)
+        )
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+            ContextCompat.getColor(this, R.color.primary_pink)
+        )
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(
+            ContextCompat.getColor(this, R.color.secondary_orange)
+        )
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(
+            ContextCompat.getColor(this, R.color.text_secondary)
+        )
+    }
+
+    /**
+     * 고급 조율 시작 - 분석 결과를 EmotionTunerActivity로 전달
+     */
+    private fun startAdvancedTuner(
+        analysis: EmotionPatternAnalyzer.EmotionAnalysis,
+        therapyPlan: DBTTherapyRecommender.TherapyPlan
+    ) {
+        val intent = Intent(this, EmotionTunerActivity::class.java).apply {
+            // 기존 파라미터 (하위 호환성)
+            putExtra("CURRENT_EMOTION_SYMBOL", analysis.dominantEmotion)
+            putExtra("CURRENT_EMOTION_NAME", emotionAnalyzer.getEmotionNameFromSymbol(analysis.dominantEmotion))
+
+            // 새로운 고급 분석 파라미터
+            putExtra("EMOTION_PATTERN", analysis.pattern.name)
+            putExtra("EMOTION_POLARITY", analysis.polarity.name)
+            putExtra("EMOTION_INTENSITY", analysis.intensity.name)
+            putExtra("THERAPY_FOCUS", therapyPlan.focus.name)
+            putExtra("THERAPY_TITLE", therapyPlan.title)
+            putExtra("THERAPY_DESCRIPTION", therapyPlan.description)
+            putExtra("THERAPY_TECHNIQUES", therapyPlan.techniques.toTypedArray())
+            putExtra("THERAPY_TIME", therapyPlan.estimatedTime)
+            putExtra("TOTAL_EMOTIONS", analysis.totalEmotions)
+            putExtra("VARIABILITY_SCORE", analysis.variabilityScore)
+        }
+        startActivity(intent)
+    }
+
+    /**
+     * 기본 조율 (오류 발생 시 대체용)
+     */
+    private fun startBasicTuner() {
         val latestEmotion = emotionData.lastOrNull()
         if (latestEmotion != null) {
             val intent = Intent(this, EmotionTunerActivity::class.java)
             intent.putExtra("CURRENT_EMOTION_SYMBOL", latestEmotion.emotionSymbol)
             intent.putExtra("CURRENT_EMOTION_NAME", getEmotionNameFromSymbol(latestEmotion.emotionSymbol))
             startActivity(intent)
-        } else {
-            Toast.makeText(this, "감정 데이터를 불러올 수 없습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * 패턴 설명 헬퍼 메소드들 (수업 3주차 - when문)
+     */
+    private fun getPatternDescription(pattern: EmotionPatternAnalyzer.EmotionalPattern): String {
+        return when(pattern) {
+            EmotionPatternAnalyzer.EmotionalPattern.STABLE -> "안정적 (고른 감정 흐름)"
+            EmotionPatternAnalyzer.EmotionalPattern.FLUCTUATING -> "변동적 (감정 기복 있음)"
+            EmotionPatternAnalyzer.EmotionalPattern.CHAOTIC -> "불안정 (급격한 감정 변화)"
+        }
+    }
+
+    private fun getPolarityDescription(polarity: EmotionPatternAnalyzer.EmotionalPolarity): String {
+        return when(polarity) {
+            EmotionPatternAnalyzer.EmotionalPolarity.POSITIVE_DOMINANT -> "긍정적 (밝은 감정 우세)"
+            EmotionPatternAnalyzer.EmotionalPolarity.NEGATIVE_DOMINANT -> "부정적 (어려운 감정 우세)"
+            EmotionPatternAnalyzer.EmotionalPolarity.MIXED -> "복합적 (다양한 감정 혼재)"
+            EmotionPatternAnalyzer.EmotionalPolarity.NEUTRAL -> "중립적 (평온한 상태)"
+        }
+    }
+
+    private fun getIntensityDescription(intensity: EmotionPatternAnalyzer.IntensityLevel): String {
+        return when(intensity) {
+            EmotionPatternAnalyzer.IntensityLevel.OVERWHELMING -> "매우 강함 (ff)"
+            EmotionPatternAnalyzer.IntensityLevel.HIGH -> "강함 (f)"
+            EmotionPatternAnalyzer.IntensityLevel.MODERATE -> "보통 (mf)"
+            EmotionPatternAnalyzer.IntensityLevel.LOW -> "약함 (p)"
         }
     }
 
@@ -189,6 +334,10 @@ class MainActivity : AppCompatActivity() {
         updateAddEmotionButton()
     }
 
+    /**
+     * 기존 감정 코드 분석 유지! (EmotionChordAnalyzer)
+     * 이건 "오늘의 감정 하모니" 카드용입니다
+     */
     private fun updateTodayChord() {
         val todayChord = chordAnalyzer.analyzeEmotions(emotionData)
         displayChord(todayChord)
@@ -216,7 +365,7 @@ class MainActivity : AppCompatActivity() {
             tvChordName.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
         }
 
-        // 공유 버튼 표시 여부만 결정 (코드 듣기 버튼 제거됨)
+        // 공유 버튼 표시 여부만 결정
         if (chord.emotionCount == 0) {
             btnShareChord.visibility = View.GONE
         } else {
