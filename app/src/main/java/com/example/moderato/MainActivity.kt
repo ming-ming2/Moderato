@@ -56,8 +56,8 @@ class MainActivity : AppCompatActivity() {
         chordAnalyzer = EmotionChordAnalyzer()
         chordHistoryManager = ChordHistoryManager(this)
 
-        // 새로운 DBT 분석기들 초기화
-        emotionAnalyzer = EmotionPatternAnalyzer()
+        // 새로운 DBT 분석기들 초기화 - Context 전달!
+        emotionAnalyzer = EmotionPatternAnalyzer() // ← 여기가 핵심!
         therapyRecommender = DBTTherapyRecommender()
 
         initViews()
@@ -161,9 +161,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 조율 방법 미리보기 다이얼로그 (수업 7주차 - 대화상자)
-     */
     private fun showTherapyPreview(
         analysis: EmotionPatternAnalyzer.EmotionAnalysis,
         therapyPlan: DBTTherapyRecommender.TherapyPlan
@@ -188,16 +185,14 @@ class MainActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this, R.style.DarkDialogTheme)
         builder.setTitle("🎧 감정 조율 분석")
         builder.setMessage(message)
+
+        // 주요 버튼만 남기기
         builder.setPositiveButton("🎵 조율 시작하기") { _, _ ->
             // EmotionTunerActivity로 분석 결과와 조율 계획 전달
             startAdvancedTuner(analysis, therapyPlan)
         }
-        builder.setNegativeButton("다시 분석") { _, _ ->
-            // 감정을 추가 기록하고 다시 분석
-            val intent = Intent(this, EmotionInputActivity::class.java)
-            startActivityForResult(intent, EMOTION_INPUT_REQUEST)
-        }
-        builder.setNeutralButton("취소", null)
+
+        builder.setNegativeButton("취소", null)
 
         val dialog = builder.show()
 
@@ -209,9 +204,6 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, R.color.primary_pink)
         )
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(
-            ContextCompat.getColor(this, R.color.secondary_orange)
-        )
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setTextColor(
             ContextCompat.getColor(this, R.color.text_secondary)
         )
     }
@@ -338,6 +330,7 @@ class MainActivity : AppCompatActivity() {
      * 기존 감정 코드 분석 유지! (EmotionChordAnalyzer)
      * 이건 "오늘의 감정 하모니" 카드용입니다
      */
+    // 감정 코드 자동 생성 및 표시
     private fun updateTodayChord() {
         val todayChord = chordAnalyzer.analyzeEmotions(emotionData)
         displayChord(todayChord)
@@ -663,6 +656,7 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, EMOTION_INPUT_REQUEST)
     }
 
+    //감정 악보 업데이트
     private fun updateEmotionStaff() {
         val emotionNotes = emotionData.map { emotion ->
             EmotionStaffView.EmotionNote(

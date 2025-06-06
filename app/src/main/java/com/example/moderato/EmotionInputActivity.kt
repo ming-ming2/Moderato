@@ -90,12 +90,10 @@ class EmotionInputActivity : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
-
+        // 🌅아침, 🌞오후, 🌙저녁, 🌃밤 4타임 선택
         btnSave.setOnClickListener {
             saveEmotionRecord()
         }
-
-        // 시간대 리스너는 제거 (자유롭게 선택 가능)
     }
 
     private fun setupSeekBar() {
@@ -220,6 +218,7 @@ class EmotionInputActivity : AppCompatActivity() {
             else -> "night"
         }
     }
+
 
     private fun saveEmotionRecord() {
         // 1. 감정 선택 확인

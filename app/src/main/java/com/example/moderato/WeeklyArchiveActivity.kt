@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
@@ -383,19 +384,16 @@ class WeeklyArchiveActivity : AppCompatActivity() {
             append("\n💭 ${dayChord.message}")
         }
 
-        val builder = android.app.AlertDialog.Builder(this, R.style.DarkDialogTheme)
+        val builder = AlertDialog.Builder(this, R.style.DarkDialogTheme)
         builder.setTitle("📖 ${dayName} 일기")
         builder.setMessage(message)
         builder.setPositiveButton("확인", null)
-        builder.setNeutralButton("수정하기") { _, _ ->
-            // 해당 날짜의 감정 입력 화면으로 이동
-            Toast.makeText(this, "감정 수정 기능은 메인 화면에서 이용해주세요", Toast.LENGTH_SHORT).show()
-        }
+        // 🔧 수정하기 버튼 제거 - setNeutralButton 삭제
         val dialog = builder.show()
 
         dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
-        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, R.color.primary_pink))
-        dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL)?.setTextColor(ContextCompat.getColor(this, R.color.secondary_orange))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, R.color.primary_pink))
+        // 🔧 수정하기 버튼 스타일링 코드도 제거
     }
 
     private fun showEmptyState() {
